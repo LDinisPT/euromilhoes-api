@@ -1,0 +1,542 @@
+[
+  {
+    "date": "2026-06-26",
+    "code": "LQV 19776",
+    "location": "Lisboa"
+  },
+  {
+    "date": "2026-05-29",
+    "code": "KVJ 19583",
+    "location": "Porto"
+  },
+  {
+    "date": "2026-04-24",
+    "code": "JHG 04555",
+    "location": "Braga"
+  },
+  {
+    "date": "2026-03-27",
+    "code": "HHM 05795",
+    "location": "Bragança"
+  },
+  {
+    "date": "2026-02-27",
+    "code": "GDH 32855",
+    "location": "Évora"
+  },
+  {
+    "date": "2026-01-30",
+    "code": "DXC 35552",
+    "location": "Viseu"
+  },
+  {
+    "date": "2025-12-26",
+    "code": "DFX 11696",
+    "location": ""
+  },
+  {
+    "date": "2025-11-28",
+    "code": "CFS 29716",
+    "location": ""
+  },
+  {
+    "date": "2025-10-31",
+    "code": "BPM 29136",
+    "location": ""
+  },
+  {
+    "date": "2025-09-26",
+    "code": "XNT 02902",
+    "location": ""
+  },
+  {
+    "date": "2025-08-29",
+    "code": "XGM 27191",
+    "location": ""
+  },
+  {
+    "date": "2025-07-25",
+    "code": "VPV 04596",
+    "location": ""
+  },
+  {
+    "date": "2025-07-18",
+    "code": "VLK 02506",
+    "location": ""
+  },
+  {
+    "date": "2025-07-11",
+    "code": "VFP 06174",
+    "location": ""
+  },
+  {
+    "date": "2025-07-04",
+    "code": "TXG 35234",
+    "location": ""
+  },
+  {
+    "date": "2025-06-27",
+    "code": "TPB 34325",
+    "location": ""
+  },
+  {
+    "date": "2025-06-20",
+    "code": "TMG 34589",
+    "location": ""
+  },
+  {
+    "date": "2025-06-13",
+    "code": "SXG 38157",
+    "location": ""
+  },
+  {
+    "date": "2025-06-06",
+    "code": "SSG 33437",
+    "location": ""
+  },
+  {
+    "date": "2025-05-30",
+    "code": "SCZ 38210",
+    "location": ""
+  },
+  {
+    "date": "2025-05-23",
+    "code": "RWW 34396",
+    "location": ""
+  },
+  {
+    "date": "2025-05-16",
+    "code": "RKS 07959",
+    "location": ""
+  },
+  {
+    "date": "2025-05-09",
+    "code": "RKJ 11555",
+    "location": ""
+  },
+  {
+    "date": "2025-05-02",
+    "code": "QWN 01293",
+    "location": ""
+  },
+  {
+    "date": "2025-04-25",
+    "code": "QRG 16634",
+    "location": ""
+  },
+  {
+    "date": "2025-04-18",
+    "code": "QPG 22210",
+    "location": ""
+  },
+  {
+    "date": "2025-04-11",
+    "code": "QFD 29564",
+    "location": ""
+  },
+  {
+    "date": "2025-04-04",
+    "code": "QDC 24644",
+    "location": ""
+  },
+  {
+    "date": "2025-03-28",
+    "code": "PTZ 00279",
+    "location": ""
+  },
+  {
+    "date": "2025-03-21",
+    "code": "PGS 39362",
+    "location": ""
+  },
+  {
+    "date": "2025-03-14",
+    "code": "NWQ 37574",
+    "location": ""
+  },
+  {
+    "date": "2025-03-07",
+    "code": "NQC 09490",
+    "location": ""
+  },
+  {
+    "date": "2025-02-28",
+    "code": "NLN 14647",
+    "location": ""
+  },
+  {
+    "date": "2025-02-21",
+    "code": "NFF 01714",
+    "location": ""
+  },
+  {
+    "date": "2025-02-14",
+    "code": "NBT 32464",
+    "location": ""
+  },
+  {
+    "date": "2025-02-07",
+    "code": "MTK 33215",
+    "location": ""
+  },
+  {
+    "date": "2025-01-31",
+    "code": "MKZ 22503",
+    "location": ""
+  },
+  {
+    "date": "2025-01-24",
+    "code": "MGW 34934",
+    "location": ""
+  },
+  {
+    "date": "2025-01-17",
+    "code": "LWF 24068",
+    "location": ""
+  },
+  {
+    "date": "2025-01-10",
+    "code": "LVD 06942",
+    "location": ""
+  },
+  {
+    "date": "2025-01-03",
+    "code": "LKS 17606",
+    "location": ""
+  },
+  {
+    "date": "2024-12-27",
+    "code": "LCQ 09817",
+    "location": ""
+  },
+  {
+    "date": "2024-12-20",
+    "code": "KZP 22302",
+    "location": ""
+  },
+  {
+    "date": "2024-12-13",
+    "code": "KRM 12065",
+    "location": ""
+  },
+  {
+    "date": "2024-12-06",
+    "code": "KFV 34730",
+    "location": ""
+  },
+  {
+    "date": "2024-11-29",
+    "code": "KFF 05736",
+    "location": ""
+  },
+  {
+    "date": "2024-11-22",
+    "code": "JTF 09481",
+    "location": ""
+  },
+  {
+    "date": "2024-11-15",
+    "code": "HZW 19110",
+    "location": ""
+  },
+  {
+    "date": "2024-11-08",
+    "code": "HQX 14814",
+    "location": ""
+  },
+  {
+    "date": "2024-11-01",
+    "code": "HKP 19351",
+    "location": ""
+  },
+  {
+    "date": "2024-10-25",
+    "code": "GZQ 32284",
+    "location": ""
+  },
+  {
+    "date": "2024-10-18",
+    "code": "GZJ 20214",
+    "location": ""
+  },
+  {
+    "date": "2024-10-11",
+    "code": "GNW 15452",
+    "location": ""
+  },
+  {
+    "date": "2024-10-04",
+    "code": "GGW 38394",
+    "location": ""
+  },
+  {
+    "date": "2024-09-27",
+    "code": "GDV 35211",
+    "location": ""
+  },
+  {
+    "date": "2024-09-20",
+    "code": "FSV 00753",
+    "location": ""
+  },
+  {
+    "date": "2024-09-13",
+    "code": "FNX 21306",
+    "location": ""
+  },
+  {
+    "date": "2024-09-06",
+    "code": "FGV 07774",
+    "location": ""
+  },
+  {
+    "date": "2024-08-30",
+    "code": "DWC 06772",
+    "location": ""
+  },
+  {
+    "date": "2024-08-23",
+    "code": "DPZ 15239",
+    "location": ""
+  },
+  {
+    "date": "2024-08-16",
+    "code": "DGV 14118",
+    "location": ""
+  },
+  {
+    "date": "2024-08-09",
+    "code": "DBB 04392",
+    "location": ""
+  },
+  {
+    "date": "2024-08-02",
+    "code": "CSZ 01929",
+    "location": ""
+  },
+  {
+    "date": "2024-07-26",
+    "code": "CQV 06535",
+    "location": ""
+  },
+  {
+    "date": "2024-07-19",
+    "code": "CJG 20941",
+    "location": ""
+  },
+  {
+    "date": "2024-07-12",
+    "code": "CBW 16503",
+    "location": ""
+  },
+  {
+    "date": "2024-07-05",
+    "code": "BVD 07361",
+    "location": ""
+  },
+  {
+    "date": "2024-06-28",
+    "code": "BRB 36376",
+    "location": ""
+  },
+  {
+    "date": "2024-06-21",
+    "code": "BHR 17400",
+    "location": ""
+  },
+  {
+    "date": "2024-06-14",
+    "code": "ZXS 38842",
+    "location": ""
+  },
+  {
+    "date": "2024-06-07",
+    "code": "ZND 37819",
+    "location": ""
+  },
+  {
+    "date": "2024-05-31",
+    "code": "ZLQ 25235",
+    "location": ""
+  },
+  {
+    "date": "2024-05-24",
+    "code": "ZFX 03326",
+    "location": ""
+  },
+  {
+    "date": "2024-05-17",
+    "code": "ZBN 25219",
+    "location": ""
+  },
+  {
+    "date": "2024-05-10",
+    "code": "XRS 13786",
+    "location": ""
+  },
+  {
+    "date": "2024-05-03",
+    "code": "XNT 28452",
+    "location": ""
+  },
+  {
+    "date": "2024-04-26",
+    "code": "XCC 06932",
+    "location": ""
+  },
+  {
+    "date": "2024-04-19",
+    "code": "WVG 14238",
+    "location": ""
+  },
+  {
+    "date": "2024-04-12",
+    "code": "WPH 32218",
+    "location": ""
+  },
+  {
+    "date": "2024-04-05",
+    "code": "WGW 00685",
+    "location": ""
+  },
+  {
+    "date": "2024-03-29",
+    "code": "WBW 16609",
+    "location": ""
+  },
+  {
+    "date": "2024-03-22",
+    "code": "VWM 29596",
+    "location": ""
+  },
+  {
+    "date": "2024-03-15",
+    "code": "VNK 17405",
+    "location": ""
+  },
+  {
+    "date": "2024-03-08",
+    "code": "VGZ 12788",
+    "location": ""
+  },
+  {
+    "date": "2024-03-01",
+    "code": "VGH 07315",
+    "location": ""
+  },
+  {
+    "date": "2024-02-23",
+    "code": "TTK 30892",
+    "location": ""
+  },
+  {
+    "date": "2024-02-16",
+    "code": "TQQ 36612",
+    "location": ""
+  },
+  {
+    "date": "2024-02-09",
+    "code": "TJH 39851",
+    "location": ""
+  },
+  {
+    "date": "2024-02-02",
+    "code": "TCD 33060",
+    "location": ""
+  },
+  {
+    "date": "2024-01-26",
+    "code": "SSK 28165",
+    "location": ""
+  },
+  {
+    "date": "2024-01-19",
+    "code": "SNF 04999",
+    "location": ""
+  },
+  {
+    "date": "2024-01-12",
+    "code": "SJR 14274",
+    "location": ""
+  },
+  {
+    "date": "2024-01-05",
+    "code": "SDR 10439",
+    "location": ""
+  },
+  {
+    "date": "2023-12-29",
+    "code": "RSD 33183",
+    "location": ""
+  },
+  {
+    "date": "2023-12-22",
+    "code": "RLK 35696",
+    "location": ""
+  },
+  {
+    "date": "2023-12-15",
+    "code": "RHT 30926",
+    "location": ""
+  },
+  {
+    "date": "2023-12-08",
+    "code": "QTM 01125",
+    "location": ""
+  },
+  {
+    "date": "2023-12-01",
+    "code": "QPM 19624",
+    "location": ""
+  },
+  {
+    "date": "2023-11-24",
+    "code": "QCS 33481",
+    "location": ""
+  },
+  {
+    "date": "2023-11-17",
+    "code": "PZW 13380",
+    "location": ""
+  },
+  {
+    "date": "2023-11-10",
+    "code": "PRQ 05566",
+    "location": ""
+  },
+  {
+    "date": "2023-11-03",
+    "code": "PKD 30301",
+    "location": ""
+  },
+  {
+    "date": "2023-10-27",
+    "code": "PJD 33252",
+    "location": ""
+  },
+  {
+    "date": "2023-10-20",
+    "code": "NWW 03868",
+    "location": ""
+  },
+  {
+    "date": "2023-10-13",
+    "code": "NSJ 33279",
+    "location": ""
+  },
+  {
+    "date": "2023-10-06",
+    "code": "NNF 24641",
+    "location": ""
+  },
+  {
+    "date": "2023-09-29",
+    "code": "NBB 29184",
+    "location": ""
+  },
+  {
+    "date": "2023-09-22",
+    "code": "MTD 10117",
+    "location": ""
+  }
+]
