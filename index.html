@@ -194,6 +194,45 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,8vw,60px);color:var(
 .empty .icon{font-size:44px;margin-bottom:10px;}
 .empty p{font-size:12px;line-height:1.6;}
 footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
+
+/* ── TURNO A ── */
+.ta-hero{background:linear-gradient(135deg,rgba(245,200,66,0.1),rgba(255,107,53,0.04));border:1.5px solid rgba(245,200,66,0.3);border-radius:16px;padding:22px 20px;text-align:center;margin-bottom:18px;}
+.ta-hero-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.ta-balls{display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+.ta-balls .ball{width:44px;height:44px;font-size:19px;}
+.ta-balls .ball.star-b{width:37px;height:37px;font-size:16px;}
+.ta-hero-sub{font-size:12px;color:var(--muted);}
+.ta-hero-sub strong{color:var(--text);}
+.ta-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:16px;}
+.ta-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;}
+.ta-stat-val{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;}
+.ta-stat-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:5px;}
+.ta-stat.win .ta-stat-val{color:var(--green);}
+.ta-stat.gold .ta-stat-val{color:var(--gold);}
+.ta-stat.cost .ta-stat-val{color:var(--muted);}
+.ta-stat.pos .ta-stat-val{color:var(--green);}
+.ta-stat.neg .ta-stat-val{color:var(--red);}
+.ta-note{background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
+.ta-note strong{color:var(--blue);}
+.ta-month{margin-bottom:18px;}
+.ta-month-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px;padding:0 4px;flex-wrap:wrap;}
+.ta-month-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text);text-transform:capitalize;}
+.ta-month-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.ta-month-sub .pos{color:var(--green);} .ta-month-sub .neg{color:var(--red);}
+.ta-draw{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:7px;flex-wrap:wrap;}
+.ta-draw.won{border-color:rgba(34,197,94,0.35);background:rgba(34,197,94,0.04);}
+.ta-draw-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:82px;flex-shrink:0;}
+.ta-draw-balls{display:flex;gap:4px;align-items:center;flex-wrap:wrap;flex:1;min-width:180px;}
+.ta-draw-balls .ball{width:29px;height:29px;font-size:12px;border-width:1px;}
+.ta-draw-balls .ball.star-b{width:25px;height:25px;font-size:11px;}
+.ta-draw-balls .ball.dim{opacity:0.3;}
+.ta-draw-res{text-align:right;margin-left:auto;min-width:96px;}
+.ta-draw-eur{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;}
+.ta-draw.won .ta-draw-eur{color:var(--green);}
+.ta-draw-eur.none{color:var(--muted);font-size:13px;font-family:'DM Mono',monospace;}
+.ta-draw-desc{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:0.5px;}
+.ta-best{background:rgba(245,200,66,0.06);border:1px solid rgba(245,200,66,0.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.5;}
+.ta-best strong{color:var(--gold);}
 </style>
 </head>
 <body>
@@ -210,9 +249,28 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 
 <!-- PAGE TABS -->
 <div class="page-tabs">
-  <div class="page-tab active" onclick="setPage('gerador')"><span class="tab-icon">🎲</span>Gerador</div>
+  <div class="page-tab active" onclick="setPage('turnoa')"><span class="tab-icon">⭐</span>Turno A</div>
+  <div class="page-tab" onclick="setPage('gerador')"><span class="tab-icon">🎲</span>Gerador</div>
   <div class="page-tab" onclick="setPage('verificador')"><span class="tab-icon">🎫</span>Verificador</div>
   <div class="page-tab" onclick="setPage('milhao')"><span class="tab-icon">💰</span>M1lhão</div>
+</div>
+
+<!-- ═══════════ TURNO A ═══════════ -->
+<div id="pageTurnoA">
+  <div class="ta-hero">
+    <div class="ta-hero-label">A nossa chave · Turno A da fábrica</div>
+    <div class="ta-balls" id="taKeyBalls"></div>
+    <div class="ta-hero-sub">5 números + 4 estrelas = <strong>6 apostas</strong> por sorteio · <strong>€15,00</strong>/sorteio</div>
+  </div>
+
+  <div class="ta-stats" id="taStats"></div>
+
+  <div class="ta-note" id="taNote">
+    ⓘ Balanço assumindo que se joga <strong>todos os sorteios</strong> (terça + sexta). Valores de Portugal, ilíquidos. Diz-me se só jogam alguns dias e ajusto.
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">Sorteios de 2026</div>
+  <div id="taDraws"><div class="empty"><div class="icon">⭐</div><p>A carregar sorteios e prémios...</p></div></div>
 </div>
 
 <!-- ═══════════ GERADOR ═══════════ -->
@@ -379,10 +437,12 @@ let savedTickets=JSON.parse(localStorage.getItem("eurom_tickets")||"[]");
 
 // ── PAGE ──
 function setPage(p){
-  document.querySelectorAll(".page-tab").forEach((t,i)=>t.classList.toggle("active",["gerador","verificador","milhao"][i]===p));
+  document.querySelectorAll(".page-tab").forEach((t,i)=>t.classList.toggle("active",["turnoa","gerador","verificador","milhao"][i]===p));
+  document.getElementById("pageTurnoA").style.display=p==="turnoa"?"block":"none";
   document.getElementById("pageGerador").style.display=p==="gerador"?"block":"none";
   document.getElementById("pageVerificador").style.display=p==="verificador"?"block":"none";
   document.getElementById("pageMilhao").style.display=p==="milhao"?"block":"none";
+  if(p==="turnoa"){buildTurnoA();}
   if(p==="verificador"){buildQuickDates();buildNumGridV();buildStarGridV();renderSaved();}
   if(p==="milhao"){loadMilhao();}
 }
@@ -653,6 +713,87 @@ function checkMilhao(){
   });
   el.innerHTML=`<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">${cards.join("")}</div>`;
 }
+
+// ── TURNO A ──
+const TURNO_A={nums:[7,21,35,37,45],stars:[2,4,5,6]};
+const TA_PAIRS=(function(){const p=[],s=TURNO_A.stars;for(let i=0;i<s.length;i++)for(let j=i+1;j<s.length;j++)p.push([s[i],s[j]]);return p;})(); // 6 pares de estrelas
+const TA_COST=TA_PAIRS.length*2.5; // €15 por sorteio
+const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+
+function taDraw(date){
+  const row=dateMap.get(date);if(!row)return null;
+  const dn=row.slice(1,6),ds=[row[6],row[7]];
+  const mn=TURNO_A.nums.filter(n=>dn.includes(n)).length;
+  const pm=prizeMap.get(date);
+  let ganho=0,temValor=false;const linhas=[];
+  for(const pair of TA_PAIRS){
+    const ms=pair.filter(s=>ds.includes(s)).length;
+    const pk=`${mn}-${ms}`;
+    if(PRIZES[pk]){const pr=pm&&pm.prizes?pm.prizes[pk]:null;if(pr&&pr.prize!=null){ganho+=pr.prize;temValor=true;}linhas.push({pk,val:pr?pr.prize:null});}
+  }
+  return{date,dn,ds,mn,ganho,linhas,premiado:linhas.length>0,temValor};
+}
+
+function taDrawBalls(d){
+  const nums=d.dn.map(n=>`<div class="ball${TURNO_A.nums.includes(n)?" hit":" dim"}">${n}</div>`).join("");
+  const stars=d.ds.map(s=>`<div class="ball star-b${TURNO_A.stars.includes(s)?" hit":" dim"}">${s}</div>`).join("");
+  return nums+`<span class="sep">★</span>`+stars;
+}
+
+function buildTurnoA(){
+  document.getElementById("taKeyBalls").innerHTML=
+    TURNO_A.nums.map(n=>`<div class="ball">${n}</div>`).join("")+`<span class="sep">★</span>`+
+    TURNO_A.stars.map(s=>`<div class="ball star-b">${s}</div>`).join("");
+
+  const datas=[...dateMap.keys()].filter(dt=>dt>="2026-01-01").sort();
+  const draws=datas.map(taDraw).filter(Boolean);
+  const container=document.getElementById("taDraws");
+  if(draws.length===0){container.innerHTML=`<div class="empty"><div class="icon">⭐</div><p>Sem sorteios de 2026 carregados.</p></div>`;return;}
+
+  const nS=draws.length,custo=nS*TA_COST;
+  const ganho=draws.reduce((a,d)=>a+d.ganho,0);
+  const premiados=draws.filter(d=>d.ganho>0).length;
+  const saldo=ganho-custo;
+  const semValor=draws.some(d=>d.premiado&&!d.temValor);
+
+  document.getElementById("taStats").innerHTML=`
+    <div class="ta-stat"><div class="ta-stat-val">${nS}</div><div class="ta-stat-lbl">Sorteios</div></div>
+    <div class="ta-stat win"><div class="ta-stat-val">${premiados}</div><div class="ta-stat-lbl">Premiados</div></div>
+    <div class="ta-stat gold"><div class="ta-stat-val">${fmtPrize(ganho)}</div><div class="ta-stat-lbl">Ganho</div></div>
+    <div class="ta-stat cost"><div class="ta-stat-val">${fmtPrize(custo)}</div><div class="ta-stat-lbl">Custo</div></div>
+    <div class="ta-stat ${saldo>=0?"pos":"neg"}"><div class="ta-stat-val">${fmtPrize(saldo)}</div><div class="ta-stat-lbl">Saldo</div></div>`;
+
+  // recuperação + melhor sorteio
+  const rec=custo>0?(ganho/custo*100):0;
+  const recHTML=`<div class="ta-best">💶 Recuperado: <strong>${rec.toFixed(1).replace(".",",")}%</strong> do que foi gasto (${fmtPrize(ganho)} de ${fmtPrize(custo)}).</div>`;
+  let best=null;for(const d of draws)if(!best||d.ganho>best.ganho)best=d;
+  const bestHTML=(best&&best.ganho>0)?`<div class="ta-best">🏅 Melhor sorteio: <strong>${best.date}</strong> — ${fmtPrize(best.ganho)} (${best.mn} número${best.mn===1?"":"s"} acertado${best.mn===1?"":"s"}).</div>`:"";
+
+  // agrupar por mês (mais recente primeiro)
+  const meses={};
+  for(const d of draws){const mk=d.date.slice(0,7);(meses[mk]=meses[mk]||[]).push(d);}
+  const chavesMes=Object.keys(meses).sort().reverse();
+  let html=recHTML+bestHTML;
+  for(const mk of chavesMes){
+    const lista=meses[mk].sort((a,b)=>b.date.localeCompare(a.date));
+    const mNome=`${MESES[parseInt(mk.slice(5,7))-1]} ${mk.slice(0,4)}`;
+    const mGanho=lista.reduce((a,d)=>a+d.ganho,0),mCusto=lista.length*TA_COST,mSaldo=mGanho-mCusto;
+    html+=`<div class="ta-month"><div class="ta-month-hd"><div class="ta-month-name">${mNome}</div>
+      <div class="ta-month-sub">${fmtPrize(mGanho)} ganho · ${fmtPrize(mCusto)} custo · saldo <span class="${mSaldo>=0?"pos":"neg"}">${fmtPrize(mSaldo)}</span></div></div>`;
+    for(const d of lista){
+      let desc,eur;
+      if(d.ganho>0){eur=`<div class="ta-draw-eur">${fmtPrize(d.ganho)}</div>`;desc=`${d.mn} nº · ${d.linhas.length} linha${d.linhas.length===1?"":"s"} premiada${d.linhas.length===1?"":"s"}`;}
+      else if(d.premiado&&!d.temValor){eur=`<div class="ta-draw-eur none">?</div>`;desc="premiado (valor indisp.)";}
+      else{eur=`<div class="ta-draw-eur none">—</div>`;desc="sem prémio";}
+      html+=`<div class="ta-draw${d.ganho>0?" won":""}"><div class="ta-draw-date">${d.date}</div>
+        <div class="ta-draw-balls">${taDrawBalls(d)}</div>
+        <div class="ta-draw-res">${eur}<div class="ta-draw-desc">${desc}</div></div></div>`;
+    }
+    html+=`</div>`;
+  }
+  if(semValor)html+=`<div class="ta-note" style="margin-top:4px;">Alguns sorteios foram premiados mas o valor exato ainda não carregou da API (abre com internet).</div>`;
+  container.innerHTML=html;
+}
 function normDraw(d){
   try{
     const nums=(d.nums||d.numbers||[d.ball_1,d.ball_2,d.ball_3,d.ball_4,d.ball_5]).map(Number).sort((a,b)=>a-b);
@@ -679,6 +820,7 @@ async function checkUpdates(){
       computeStats();updateCounts();
     }
     if(document.getElementById("pageVerificador").style.display!=="none"){buildQuickDates();if(currentDraw)loadDraw(currentDraw.date);renderSaved();}
+    if(document.getElementById("pageTurnoA").style.display!=="none")buildTurnoA();
     const extra=comPremios?` · prémios de ${comPremios.toLocaleString("pt-PT")}`:"";
     if(novos.length>0)document.getElementById("updateText").textContent=`✓ ${HIST.length} sorteios (${novos.length} novos)${extra}`;
     else document.getElementById("updateText").textContent=`✓ Histórico atualizado — ${HIST.length} sorteios${extra}`;
@@ -689,6 +831,7 @@ async function checkUpdates(){
 // ── INIT ──
 buildSysPills();updateBtn();updateCounts();
 document.querySelector(".pill[data-keys=\"2\"]").classList.add("active");
+setPage("turnoa");   // Turno A é a página inicial
 checkUpdates();
 </script>
 </body>
