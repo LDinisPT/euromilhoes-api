@@ -217,6 +217,11 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 .ta-note{background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
 .ta-note strong{color:var(--blue);}
 .conta-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.conta-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.conta-status{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.conta-status.ok{color:var(--green);} .conta-status.edit{color:var(--gold);} .conta-status.err{color:var(--red);}
+.conta-in:disabled{color:var(--text);opacity:1;cursor:default;}
+.conta-in.conta-cell:disabled,.conta-in.conta-name:disabled{background:transparent;}
 .conta-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--card);}
 .conta-tbl{border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;}
 .conta-tbl th,.conta-tbl td{border:1px solid var(--border);padding:0;text-align:center;}
@@ -461,20 +466,24 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 
 <!-- ═══════════ CONTA (TESOURARIA) ═══════════ -->
 <div id="pageConta" style="display:none;">
+  <div class="conta-bar">
+    <div id="contaStatus" class="conta-status">☁ A ligar à nuvem...</div>
+    <div style="display:flex;gap:6px;">
+      <button class="ta-fbtn" id="contaBtnEdit" onclick="contaEditar()">🔒 Editar</button>
+      <button class="ta-fbtn" id="contaBtnSave" onclick="contaGuardar()" style="display:none;background:rgba(34,197,94,0.12);border-color:var(--green);color:var(--green);">💾 Guardar</button>
+      <button class="ta-fbtn" id="contaBtnCancel" onclick="contaCancelar()" style="display:none;">✕</button>
+    </div>
+  </div>
   <div class="ta-note" style="margin-bottom:14px;">
-    💶 Contabilidade do grupo. Tudo o que escreveres fica <strong>guardado neste dispositivo</strong>. O <strong>Em Caixa</strong> é calculado sozinho:
-    A transitar + Prémios + Quotas − Apostas − Convívios.
+    💶 Contabilidade do grupo, guardada <strong>na nuvem</strong>. Toda a gente vê; só quem tem <strong>PIN</strong> altera. O <strong>Em Caixa</strong> calcula-se sozinho: A transitar + Prémios + Quotas − Apostas − Convívios.
   </div>
 
-  <div class="conta-head">
-    <div class="section-label" style="margin:0;">Resumo mensal · <span id="contaAno">2026</span></div>
-    <button class="ta-fbtn" onclick="contaReset()" style="font-size:10px;">↺ Repor exemplo</button>
-  </div>
+  <div class="section-label" style="margin:0 0 8px;">Resumo mensal · <span id="contaAno">2026</span></div>
   <div class="conta-scroll"><table class="conta-tbl" id="contaFin"></table></div>
 
-  <div class="section-label" style="margin:22px 0 8px;">Sócios · quotas por mês <span style="color:var(--gold);">(clica para escrever)</span></div>
+  <div class="section-label" style="margin:22px 0 8px;">Sócios · datas de pagamento (10 €/mês)</div>
   <div class="conta-scroll"><table class="conta-tbl" id="contaMembros"></table></div>
-  <div style="text-align:center;margin-top:10px;"><button class="ta-fbtn" onclick="contaAddMembro()">+ Adicionar sócio</button></div>
+  <div style="text-align:center;margin-top:10px;"><button class="ta-fbtn" id="contaBtnAdd" onclick="contaAddMembro()" style="display:none;">+ Adicionar sócio</button></div>
 </div>
 
 <footer id="footerInfo">Apenas entretenimento · Linha Vida 1414</footer>
@@ -529,7 +538,7 @@ function setPage(p){
   if(p==="turnoa"){buildTurnoA();}
   if(p==="verificador"){buildQuickDates();buildNumGridV();buildStarGridV();renderSaved();}
   if(p==="milhao"){loadMilhao();}
-  if(p==="conta"){buildConta();}
+  if(p==="conta"){contaAbrir();}
 }
 
 // ── GERADOR ──
@@ -1017,10 +1026,10 @@ const CONTA_SEED={
   }
 };
 const QUOTA=10; // € por sócio por mês
-let conta=null;
+const CONTA_URL="https://euromilhoes-conta.luisfmdinis.workers.dev";
+let conta=null,contaPin=null,contaEditMode=false;
 function cNum(v){const n=parseFloat(String(v).replace(",","."));return isNaN(n)?0:n;}
-function loadConta(){conta=JSON.parse(localStorage.getItem("ta_conta_v1")||"null");if(!conta)conta=JSON.parse(JSON.stringify(CONTA_SEED));if(!conta.cells)conta.cells={};}
-function saveConta(){localStorage.setItem("ta_conta_v1",JSON.stringify(conta));}
+function contaCacheLocal(){localStorage.setItem("ta_conta_v1",JSON.stringify(conta));}
 function contaQuotas(i){let c=0;for(let r=0;r<conta.membros.length;r++)if((conta.cells[r+"-"+i]||"").trim())c++;return c*QUOTA;}
 function contaPago(r){let c=0;for(let i=0;i<12;i++)if((conta.cells[r+"-"+i]||"").trim())c++;return c*QUOTA;}
 function contaTransitar(i){return i===0?cNum(conta.fin.transitar[0]):contaEmCaixa(i-1);}
@@ -1033,40 +1042,73 @@ function recomputeConta(){
     const ee=document.getElementById("c-emc-"+i);if(ee)ee.textContent=fmtPrize(contaEmCaixa(i));
   }
   for(let r=0;r<conta.membros.length;r++){const pg=document.getElementById("c-pago-"+r);if(pg)pg.textContent=fmtPrize(contaPago(r));}
-  saveConta();
+  contaCacheLocal();
 }
 
-function buildConta(){
-  if(!conta)loadConta();
+function contaStatus(txt,cls){const s=document.getElementById("contaStatus");if(s){s.textContent=txt;s.className="conta-status "+(cls||"");}}
+function contaButtons(){
+  document.getElementById("contaBtnEdit").style.display=contaEditMode?"none":"";
+  document.getElementById("contaBtnSave").style.display=contaEditMode?"":"none";
+  document.getElementById("contaBtnCancel").style.display=contaEditMode?"":"none";
+  document.getElementById("contaBtnAdd").style.display=contaEditMode?"":"none";
+}
+
+function renderConta(){
+  if(!conta)return;
   document.getElementById("contaAno").textContent=conta.ano;
-  // ── resumo mensal ──
-  const inputRow=(key,lbl)=>{let s=`<tr><th class="rub">${lbl}</th>`;for(let i=0;i<12;i++){if(key==="transitar"&&i>0)s+=`<td><span class="conta-calc" id="c-trans-${i}"></span></td>`;else s+=`<td><input class="conta-in" type="number" step="0.01" value="${conta.fin[key][i]||0}" data-k="${key}" data-i="${i}"></td>`;}return s+"</tr>";};
+  const dis=contaEditMode?"":"disabled";
+  const inputRow=(key,lbl)=>{let s=`<tr><th class="rub">${lbl}</th>`;for(let i=0;i<12;i++){if(key==="transitar"&&i>0)s+=`<td><span class="conta-calc" id="c-trans-${i}"></span></td>`;else s+=`<td><input class="conta-in" type="number" step="0.01" ${dis} value="${conta.fin[key][i]||0}" data-k="${key}" data-i="${i}"></td>`;}return s+"</tr>";};
   const calcRow=(lbl,pref,cls)=>{let s=`<tr class="${cls||''}"><th class="rub">${lbl}</th>`;for(let i=0;i<12;i++)s+=`<td><span class="conta-calc" id="${pref}-${i}"></span></td>`;return s+"</tr>";};
   let h="<thead><tr><th class='rub'>Rubrica</th>"+CMESES_N.map(m=>`<th>${m}</th>`).join("")+"</tr></thead><tbody>";
   h+=inputRow("transitar","A transitar")+inputRow("receitas","Prémios")+calcRow("Quotas","c-quotas")+inputRow("desp","Apostas")+inputRow("conv","Convívios")+calcRow("Em Caixa","c-emc","emcaixa")+"</tbody>";
   const fin=document.getElementById("contaFin");fin.innerHTML=h;
   fin.querySelectorAll("input.conta-in").forEach(inp=>inp.addEventListener("input",e=>{conta.fin[e.target.dataset.k][+e.target.dataset.i]=cNum(e.target.value);recomputeConta();}));
 
-  // ── sócios ──
   let m="<thead><tr><th class='rub'>Sócio</th>"+CMESES_N.map(x=>`<th>${x}</th>`).join("")+"<th>Pago</th></tr></thead><tbody>";
   conta.membros.forEach((nome,r)=>{
-    m+=`<tr><th class="rub"><input class="conta-in conta-name" value="${(nome||"").replace(/"/g,'&quot;')}" data-r="${r}" placeholder="nome..."></th>`;
-    for(let i=0;i<12;i++){const v=(conta.cells[r+"-"+i]||"").replace(/"/g,'&quot;');m+=`<td><input class="conta-in conta-cell" value="${v}" data-r="${r}" data-m="${i}"></td>`;}
+    m+=`<tr><th class="rub"><input class="conta-in conta-name" ${dis} value="${(nome||"").replace(/"/g,'&quot;')}" data-r="${r}" placeholder="nome..."></th>`;
+    for(let i=0;i<12;i++){const v=(conta.cells[r+"-"+i]||"").replace(/"/g,'&quot;');m+=`<td><input class="conta-in conta-cell" ${dis} value="${v}" data-r="${r}" data-m="${i}"></td>`;}
     m+=`<td><span class="conta-calc" id="c-pago-${r}" style="color:var(--gold);"></span></td></tr>`;
   });
   m+="</tbody>";
   const mt=document.getElementById("contaMembros");mt.innerHTML=m;
-  mt.querySelectorAll("input.conta-name").forEach(inp=>inp.addEventListener("input",e=>{conta.membros[+e.target.dataset.r]=e.target.value;saveConta();}));
+  mt.querySelectorAll("input.conta-name").forEach(inp=>inp.addEventListener("input",e=>{conta.membros[+e.target.dataset.r]=e.target.value;contaCacheLocal();}));
   mt.querySelectorAll("input.conta-cell").forEach(inp=>inp.addEventListener("input",e=>{const k=e.target.dataset.r+"-"+e.target.dataset.m;if(e.target.value.trim())conta.cells[k]=e.target.value;else delete conta.cells[k];recomputeConta();}));
 
+  contaButtons();
   recomputeConta();
 }
-function contaAddMembro(){if(!conta)loadConta();conta.membros.push("");saveConta();buildConta();}
-function contaReset(){if(confirm("Repor os dados de exemplo (com Junho 2026)? Perdes o que preencheste."))
-  {conta=JSON.parse(JSON.stringify(CONTA_SEED));saveConta();buildConta();}}
+
+async function contaAbrir(){
+  if(contaEditMode){renderConta();return;}   // não recarregar enquanto se edita
+  contaStatus("☁ A ligar à nuvem...","");
+  let cloud=null;
+  try{const r=await fetch(CONTA_URL,{cache:"no-store"});if(r.ok)cloud=await r.json();}catch(e){}
+  if(cloud){conta=cloud;contaCacheLocal();contaStatus("☁ Guardado na nuvem · leitura","ok");}
+  else{conta=JSON.parse(localStorage.getItem("ta_conta_v1")||"null")||JSON.parse(JSON.stringify(CONTA_SEED));contaStatus("⚠ Sem ligação — a mostrar cópia local","err");}
+  if(!conta.cells)conta.cells={};
+  renderConta();
+}
+function contaEditar(){
+  const p=prompt("PIN para editar a Conta:");
+  if(!p)return;
+  contaPin=p;contaEditMode=true;renderConta();
+  contaStatus("✏ A editar — carrega em Guardar no fim","edit");
+}
+async function contaGuardar(){
+  contaStatus("A guardar na nuvem...","");
+  try{
+    const r=await fetch(CONTA_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:contaPin,data:conta})});
+    if(r.status===403){contaStatus("✕ PIN errado — não gravou. Carrega em Editar e tenta outra vez.","err");contaPin=null;return;}
+    if(!r.ok)throw new Error();
+    contaEditMode=false;renderConta();contaStatus("✔ Guardado na nuvem!","ok");
+  }catch(e){contaStatus("⚠ Falha a guardar — verifica a internet e tenta de novo.","err");}
+}
+function contaCancelar(){contaEditMode=false;contaPin=null;conta=null;contaAbrir();}
+function contaAddMembro(){conta.membros.push("");renderConta();}
 
 // ── INIT ──
-buildSysPills();updateBtn();updateCounts();loadConta();
+buildSysPills();updateBtn();updateCounts();
 document.querySelector(".pill[data-keys=\"2\"]").classList.add("active");
 setPage("turnoa");   // Turno A é a página inicial
 checkUpdates();

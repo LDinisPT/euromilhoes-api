@@ -1,0 +1,7 @@
+name = "euromilhoes-conta"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[[kv_namespaces]]
+binding = "CONTA"
+id = "410a66698fa544db9cbcaa21eac669d8"
