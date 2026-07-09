@@ -6,10 +6,10 @@
 <title>Euromilhões · Gerador & Verificador</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#f5c842;--dark:#08090f;--dark2:#0e1020;--dark3:#141728;--card:#111523;--border:rgba(245,200,66,0.12);--star:#ff6b35;--text:#dde3f0;--muted:#5a6282;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--purple:#a855f7;}
+:root{--gold:#b8862b;--dark:#eef1f8;--dark2:#e7ecf5;--dark3:#e3e8f1;--card:#ffffff;--border:rgba(24,34,64,0.12);--star:#df6a2f;--text:#1b2233;--muted:#6b7488;--green:#1f9d57;--red:#d64545;--blue:#2b7fd4;--purple:#7c5cd6;--ink:#20283a;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
-body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(245,200,66,0.05) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0;}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(24,34,64,0.045) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0;}
 .wrap{max-width:820px;margin:0 auto;padding:0 18px;position:relative;z-index:1;}
 header{padding:36px 0 22px;border-bottom:1px solid var(--border);margin-bottom:28px;}
 h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,8vw,60px);color:var(--gold);letter-spacing:3px;line-height:1;text-shadow:0 0 60px rgba(245,200,66,0.2);}
@@ -44,14 +44,14 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,8vw,60px);color:var(
 .budget-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px;}
 .pill{padding:8px 16px;border-radius:100px;border:1px solid var(--border);background:var(--dark3);color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all 0.2s;user-select:none;}
 .pill:hover{border-color:rgba(245,200,66,0.4);color:var(--gold);}
-.pill.active{background:var(--gold);color:var(--dark);border-color:var(--gold);font-weight:600;}
+.pill.active{background:var(--gold);color:#fff;border-color:var(--gold);font-weight:600;}
 
 /* STRATEGIES */
 .strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:26px;}
 .strat-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 14px 12px;cursor:pointer;transition:all 0.2s;user-select:none;position:relative;}
 .strat-card:hover{border-color:rgba(245,200,66,0.3);}
 .strat-card.active{border-color:var(--gold);background:rgba(245,200,66,0.04);}
-.strat-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center;font-size:10px;color:var(--dark);}
+.strat-check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center;font-size:10px;color:#fff;}
 .strat-card.active .strat-check{display:flex;}
 .strat-icon{font-size:22px;margin-bottom:8px;}
 .strat-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;}
@@ -64,8 +64,8 @@ h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,8vw,60px);color:var(
 .star-pill.active{background:rgba(255,107,53,0.1);border-color:var(--star);color:var(--star);}
 
 /* BUTTONS */
-.btn-generate{width:100%;padding:15px;background:var(--gold);color:var(--dark);border:none;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;margin-bottom:26px;}
-.btn-generate:hover{background:#ffd84d;transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,200,66,0.25);}
+.btn-generate{width:100%;padding:15px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;margin-bottom:26px;}
+.btn-generate:hover{background:#a9781f;transform:translateY(-1px);box-shadow:0 8px 24px rgba(184,134,43,0.3);}
 .btn-generate:active{transform:translateY(0);}
 
 /* COST BOX */
