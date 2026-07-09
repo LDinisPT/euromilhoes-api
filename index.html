@@ -212,6 +212,7 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 <div class="page-tabs">
   <div class="page-tab active" onclick="setPage('gerador')"><span class="tab-icon">🎲</span>Gerador</div>
   <div class="page-tab" onclick="setPage('verificador')"><span class="tab-icon">🎫</span>Verificador</div>
+  <div class="page-tab" onclick="setPage('milhao')"><span class="tab-icon">💰</span>M1lhão</div>
 </div>
 
 <!-- ═══════════ GERADOR ═══════════ -->
@@ -316,6 +317,25 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
   </div>
 </div>
 
+<!-- ═══════════ M1LHÃO ═══════════ -->
+<div id="pageMilhao" style="display:none;">
+  <div class="date-search-box">
+    <div class="section-label">Verificar código(s) do M1lhão</div>
+    <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:12px;">
+      O M1lhão é o jogo de Portugal: cada aposta recebe um <strong>código</strong> (3 letras + 5 números).
+      Cola aqui os códigos dos teus talões (um por linha) para ver se algum saiu premiado — e onde.
+    </p>
+    <textarea id="milhaoInput" placeholder="Ex.:&#10;LQV 19776&#10;ABC 12345" style="width:100%;height:90px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-family:'DM Mono',monospace;font-size:14px;padding:12px;resize:vertical;text-transform:uppercase;letter-spacing:1px;"></textarea>
+    <button class="btn-verify" onclick="checkMilhao()" style="margin-top:12px;">💰 VERIFICAR CÓDIGOS</button>
+    <div id="milhaoResult"></div>
+  </div>
+
+  <div class="saved-section">
+    <div class="section-label" style="margin-bottom:10px;">Últimos códigos vencedores</div>
+    <div id="milhaoRecent"><div class="empty"><div class="icon" style="font-size:28px;">💰</div><p>A carregar resultados do M1lhão...</p></div></div>
+  </div>
+</div>
+
 <footer id="footerInfo">Apenas entretenimento · Linha Vida 1414</footer>
 </div>
 
@@ -359,10 +379,12 @@ let savedTickets=JSON.parse(localStorage.getItem("eurom_tickets")||"[]");
 
 // ── PAGE ──
 function setPage(p){
-  document.querySelectorAll(".page-tab").forEach((t,i)=>t.classList.toggle("active",["gerador","verificador"][i]===p));
+  document.querySelectorAll(".page-tab").forEach((t,i)=>t.classList.toggle("active",["gerador","verificador","milhao"][i]===p));
   document.getElementById("pageGerador").style.display=p==="gerador"?"block":"none";
   document.getElementById("pageVerificador").style.display=p==="verificador"?"block":"none";
+  document.getElementById("pageMilhao").style.display=p==="milhao"?"block":"none";
   if(p==="verificador"){buildQuickDates();buildNumGridV();buildStarGridV();renderSaved();}
+  if(p==="milhao"){loadMilhao();}
 }
 
 // ── GERADOR ──
@@ -590,6 +612,47 @@ function updateCounts(){
 // Reserva: a API pública original, caso a primeira falhe.
 const API_PRIMARY="https://raw.githubusercontent.com/LDinisPT/euromilhoes-api/main/data/draws.json";
 const API_FALLBACK="https://euromillions.api.pedromealha.dev/v1/draws";
+const MILHAO_URL="https://raw.githubusercontent.com/LDinisPT/euromilhoes-api/main/data/milhao.json";
+
+// ── M1LHÃO ──
+let milhaoList=null;const milhaoByCode=new Map();
+function normCode(s){const m=String(s).toUpperCase().replace(/[^A-Z0-9]/g,"").match(/^([A-Z]{3})(\d{5})$/);return m?`${m[1]} ${m[2]}`:null;}
+async function loadMilhao(){
+  if(milhaoList!==null){renderMilhaoRecent();return;}
+  try{
+    const r=await fetch(MILHAO_URL,{cache:"no-store"});if(!r.ok)throw new Error();
+    milhaoList=await r.json();
+    for(const m of milhaoList){const c=normCode(m.code);if(c)milhaoByCode.set(c,m);}
+  }catch(e){milhaoList=[];}
+  renderMilhaoRecent();
+}
+function renderMilhaoRecent(){
+  const el=document.getElementById("milhaoRecent");
+  if(!milhaoList||milhaoList.length===0){el.innerHTML="<div class=\"empty\"><div class=\"icon\" style=\"font-size:28px;\">💰</div><p>Sem ligação aos resultados do M1lhão.</p></div>";return;}
+  el.innerHTML=milhaoList.slice(0,18).map(m=>`
+    <div class="saved-card">
+      <div style="flex:1;"><span style="font-family:'DM Mono',monospace;font-size:16px;color:var(--gold);letter-spacing:1px;">${m.code}</span></div>
+      <div style="text-align:right;">
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:${m.location?"var(--star)":"var(--muted)"};">${m.location||"—"}</div>
+        <div class="s-date">${m.date}</div>
+      </div>
+    </div>`).join("");
+}
+function checkMilhao(){
+  const raw=document.getElementById("milhaoInput").value;
+  const linhas=raw.split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean);
+  const el=document.getElementById("milhaoResult");
+  if(linhas.length===0){el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-top:14px;">Cola pelo menos um código.</div>`;return;}
+  if(!milhaoList){el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-top:14px;">A carregar resultados... tenta outra vez num instante.</div>`;loadMilhao();return;}
+  const cards=linhas.map(l=>{
+    const c=normCode(l);
+    if(!c)return`<div class="result-card lose" style="padding:14px;"><div class="result-sub">⚠ Código inválido: <strong>${l}</strong> — formato esperado: 3 letras + 5 números (ex.: LQV 19776).</div></div>`;
+    const hit=milhaoByCode.get(c);
+    if(hit)return`<div class="result-card win1" style="padding:18px;"><div class="result-emoji">🏆</div><div class="result-title" style="font-size:22px;">M1LHÃO! ${c}</div><div class="result-sub">Este código saiu no sorteio de <strong>${hit.date}</strong>${hit.location?` · ganho em <strong style="color:var(--star);">${hit.location}</strong>`:""}.</div></div>`;
+    return`<div class="result-card lose" style="padding:14px;"><div class="result-sub">😔 <strong style="color:var(--gold);">${c}</strong> — não consta como vencedor nos ${milhaoList.length} sorteios registados.</div></div>`;
+  });
+  el.innerHTML=`<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">${cards.join("")}</div>`;
+}
 function normDraw(d){
   try{
     const nums=(d.nums||d.numbers||[d.ball_1,d.ball_2,d.ball_3,d.ball_4,d.ball_5]).map(Number).sort((a,b)=>a-b);
