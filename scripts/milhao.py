@@ -60,10 +60,19 @@ def scrape_main():
 
 
 def scrape_draw_code(date_iso):
-    """Código do M1lhão de uma data (sem localidade), ou None."""
+    """Código do M1lhão (Portugal) de uma data, ou None.
+
+    IMPORTANTE: a mesma página tem o "El Millón" (Espanha), com OUTRO código.
+    Procuramos o código apenas na janela logo a seguir ao cabeçalho do M1lhão,
+    para nunca apanhar o de Espanha.
+    """
     dd = datetime.strptime(date_iso, "%Y-%m-%d").strftime("%d-%m-%Y")
     h = fetch(DRAW.format(dd))
-    m = re.search(r"Resultados do M1lh[aã]o.*?raffleBox[^>]*>\s*(" + CODE + r")", h, re.S)
+    hm = re.search(r"Resultados do M1lh[aã]o", h)
+    if not hm:
+        return None
+    janela = h[hm.end():hm.end() + 800]  # a secção do M1lhão; não chega à de Espanha
+    m = re.search(r"raffleBox[^>]*>\s*(" + CODE + r")", janela)
     return clean_code(m.group(1)) if m else None
 
 
