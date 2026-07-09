@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cores · Euromilhões Turno A</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#0b0d16;padding:20px 12px;}
+.intro{max-width:900px;margin:0 auto 22px;color:#cdd4e6;text-align:center;}
+.intro h1{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:2px;color:#f5c842;}
+.intro p{font-size:13px;color:#8b93ac;margin-top:4px;}
+.grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;}
+
+/* ---- variantes (cada uma define as variáveis) ---- */
+.v1{--bg:#eef1f8;--card:#ffffff;--card2:#e7ecf5;--border:rgba(24,34,64,0.10);--text:#1b2233;--muted:#6b7488;--gold:#b8862b;--star:#df6a2f;--green:#1f9d57;--red:#d64545;--heroA:rgba(184,134,43,0.14);--heroB:rgba(223,106,47,0.06);}
+.v2{--bg:#1b2130;--card:#232c40;--card2:#2b3550;--border:rgba(255,255,255,0.09);--text:#e8edf8;--muted:#8b95ac;--gold:#f5c842;--star:#ff8a5c;--green:#34d17f;--red:#ff6b6b;--heroA:rgba(245,200,66,0.12);--heroB:rgba(255,138,92,0.06);}
+.v3{--bg:#f5eee0;--card:#fffdf8;--card2:#ece2ce;--border:rgba(120,90,40,0.16);--text:#33291c;--muted:#8a7a63;--gold:#b07d1f;--star:#cc5629;--green:#3f8f4f;--red:#c0432f;--heroA:rgba(176,125,31,0.14);--heroB:rgba(204,86,41,0.06);}
+
+.panel{background:var(--bg);border-radius:16px;padding:16px;color:var(--text);}
+.pname{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.ptitle{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--gold);margin-bottom:14px;}
+
+.bar{display:flex;align-items:center;gap:8px;background:color-mix(in srgb,var(--card) 100%,transparent);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.refresh{margin-left:auto;padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card2);color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;}
+
+.hero{background:linear-gradient(135deg,var(--heroA),var(--heroB));border:1.5px solid color-mix(in srgb,var(--gold) 45%,transparent);border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;}
+.hero-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.balls{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;}
+.ball{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;border:1.5px solid color-mix(in srgb,var(--gold) 40%,transparent);color:var(--gold);background:var(--card2);}
+.ball.s{width:31px;height:31px;font-size:14px;border-color:var(--star);color:var(--star);background:color-mix(in srgb,var(--star) 12%,transparent);}
+.sep{color:var(--muted);}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 4px;text-align:center;}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:19px;line-height:1;}
+.sl{font-size:7px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-top:3px;}
+.sv.g{color:var(--gold);} .sv.w{color:var(--green);} .sv.n{color:var(--red);} .sv.m{color:var(--muted);}
+
+.banner{background:linear-gradient(135deg,var(--heroA),var(--heroB));border:1.5px solid color-mix(in srgb,var(--gold) 40%,transparent);border-radius:12px;padding:14px;text-align:center;margin-bottom:12px;}
+.b-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
+.b-cost{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--gold);line-height:1.1;}
+.b-sub{font-size:10px;color:var(--muted);}
+.b-sub b{color:var(--star);}
+
+.draw{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:6px;}
+.draw.won{border-color:color-mix(in srgb,var(--green) 40%,transparent);background:color-mix(in srgb,var(--green) 6%,var(--card));}
+.d-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:74px;}
+.d-balls{display:flex;gap:3px;flex:1;flex-wrap:wrap;}
+.d-balls .ball{width:24px;height:24px;font-size:10px;border-width:1px;}
+.d-balls .ball.s{width:22px;height:22px;font-size:9px;}
+.d-balls .ball.dim{opacity:0.28;}
+.d-eur{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--green);margin-left:auto;}
+.d-eur.no{color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;}
+.mil{display:flex;align-items:center;gap:6px;background:color-mix(in srgb,var(--star) 6%,var(--card));border:1px solid color-mix(in srgb,var(--star) 18%,transparent);border-radius:8px;padding:6px 10px;font-size:10px;color:var(--muted);margin-bottom:6px;}
+.mil .c{font-family:'DM Mono',monospace;color:var(--gold);}
+.mil .l{color:var(--star);}
+</style>
+</head>
+<body>
+<div class="intro">
+  <h1>3 Variantes de Cores</h1>
+  <p>Mesmos componentes do Turno A, três paletas. Diz-me o número que preferes (ou mistura).</p>
+</div>
+<div class="grid" id="grid"></div>
+<script>
+const variants=[
+  {cls:"v1",name:"Variante 1",title:"Claro Limpo"},
+  {cls:"v2",name:"Variante 2",title:"Azul Suave"},
+  {cls:"v3",name:"Variante 3",title:"Creme Quente"},
+];
+const key=n=>`<div class="ball">${n}</div>`, star=s=>`<div class="ball s">${s}</div>`;
+function panel(v){
+  return `<div class="panel ${v.cls}">
+    <div class="pname">${v.name}</div><div class="ptitle">${v.title}</div>
+    <div class="bar"><span class="dot"></span> 1961 sorteios · prémios de 1960 <button class="refresh">🔄 Atualizar</button></div>
+    <div class="hero"><div class="hero-lbl">A nossa chave · Turno A</div>
+      <div class="balls">${[7,21,35,37,45].map(key).join("")}<span class="sep">★</span>${[2,4,5,6].map(star).join("")}</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="sv">54</div><div class="sl">Sorteios</div></div>
+      <div class="stat"><div class="sv w">6</div><div class="sl">Premiados</div></div>
+      <div class="stat"><div class="sv g">€86</div><div class="sl">Ganho</div></div>
+      <div class="stat"><div class="sv m">€810</div><div class="sl">Custo</div></div>
+      <div class="stat"><div class="sv n">−€723</div><div class="sl">Saldo</div></div>
+    </div>
+    <div class="banner"><div class="b-lbl">A pagar este mês · julho 2026</div>
+      <div class="b-cost">€135,00</div><div class="b-sub">9 sorteios · <b>faltam 7 = €105,00</b></div></div>
+    <div class="mil">💰 M1lhão <span class="c">LQV 19776</span> · ganhou em <span class="l">Lisboa</span></div>
+    <div class="draw won"><div class="d-date">2026-06-16</div>
+      <div class="d-balls">${[18,25,31,37,45].map(n=>`<div class="ball ${[7,21,35,37,45].includes(n)?'':'dim'}">${n}</div>`).join("")}<span class="sep">★</span>${[4,9].map(s=>`<div class="ball s ${[2,4,5,6].includes(s)?'':'dim'}">${s}</div>`).join("")}</div>
+      <div class="d-eur">€30,72</div></div>
+    <div class="draw"><div class="d-date">2026-07-07</div>
+      <div class="d-balls">${[5,29,33,45,47].map(n=>`<div class="ball ${[7,21,35,37,45].includes(n)?'':'dim'}">${n}</div>`).join("")}<span class="sep">★</span>${[5,8].map(s=>`<div class="ball s ${[2,4,5,6].includes(s)?'':'dim'}">${s}</div>`).join("")}</div>
+      <div class="d-eur no">sem prémio</div></div>
+  </div>`;
+}
+document.getElementById("grid").innerHTML=variants.map(panel).join("");
+</script>
+</body>
+</html>
