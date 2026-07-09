@@ -138,8 +138,14 @@ def main():
             r = norm_api(d)
             if not r:
                 continue
+            antigo = por_data.get(r["date"])
             if r["date"] not in por_data:
                 novos += 1
+            # Não apagar prémios já conhecidos se a API os devolver vazios
+            if antigo and antigo.get("prizes") and not r.get("prizes"):
+                r["prizes"] = antigo["prizes"]
+                r["jackpot"] = antigo.get("jackpot")
+                r["has_winner"] = antigo.get("has_winner")
             por_data[r["date"]] = r
         print("API pedromealha: OK.")
     except Exception as e:
