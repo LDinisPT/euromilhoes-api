@@ -406,7 +406,9 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
     <span class="sel-empty">Seleciona 5 números e 2 estrelas</span>
   </div>
 
-  <button class="btn-verify" id="btnVerify" onclick="verify()" disabled>🎫 VERIFICAR BILHETE</button>
+  <button class="btn-verify" id="btnVerifHist" onclick="verifyHistory()" disabled>🔍 VER SE JÁ SAIU PREMIADA</button>
+  <button class="btn-verify" id="btnVerify" onclick="verify()" disabled style="font-size:15px;padding:11px;margin-top:-8px;">🎫 Comparar com um sorteio específico</button>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin:-10px 0 18px;line-height:1.5;">O primeiro procura a chave em <strong>todos os sorteios</strong> desde 2004. O segundo precisa que escolhas uma data acima.</div>
 
   <!-- RESULT -->
   <div id="verifResult"></div>
@@ -641,7 +643,39 @@ function updateVerifSelection(){
 }
 
 function updateVerifBtn(){
-  document.getElementById("btnVerify").disabled=!(vPickedNums.length===5&&vPickedStars.length===2&&currentDraw);
+  const full=vPickedNums.length===5&&vPickedStars.length===2;
+  document.getElementById("btnVerifHist").disabled=!full;
+  document.getElementById("btnVerify").disabled=!(full&&currentDraw);
+}
+
+function verifyHistory(){
+  const nums=[...vPickedNums].sort((a,b)=>a-b),stars=[...vPickedStars].sort((a,b)=>a-b);
+  if(nums.length!==5||stars.length!==2)return;
+  const wins=[];let total=0,exact=0,comValor=false;
+  for(const row of HIST){
+    const hn=row.slice(1,6),hs=[row[6],row[7]];
+    const nh=nums.filter(n=>hn.includes(n)).length;
+    const sh=stars.filter(s=>hs.includes(s)).length;
+    const pk=`${nh}-${sh}`;
+    if(nh===5&&sh===2)exact++;
+    if(PRIZES[pk]){const pr=prizeFor(row[0],pk);const v=pr?pr.prize:null;if(v!=null){total+=v;comValor=true;}wins.push({date:row[0],pk,nh,sh,val:v});}
+  }
+  wins.sort((a,b)=>((b.val||0)-(a.val||0))||b.date.localeCompare(a.date));
+  const el=document.getElementById("verifResult"),N=HIST.length,chave=`${nums.join(", ")} ★ ${stars.join(", ")}`;
+  if(wins.length===0){
+    el.innerHTML=`<div class="result-card lose"><div class="result-emoji">🔍</div><div class="result-title">Nunca premiada</div><div class="result-sub">A chave ${chave} não teria ganho nada nos ${N.toLocaleString("pt-PT")} sorteios desde 2004.</div></div>`;
+    return;
+  }
+  const best=wins[0];
+  let html=`<div class="result-card win2"><div class="result-emoji">${exact?"🏆":"🎯"}</div>
+    <div class="result-title">${wins.length}× premiada</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);margin:6px 0 2px;">${comValor?fmtPrize(total):"—"}</div>
+    <div class="result-sub">Total que a chave ${chave} teria ganho em ${N.toLocaleString("pt-PT")} sorteios.${exact?` <strong>Saiu completa ${exact}×!</strong>`:""}<br>Melhor: ${PRIZES[best.pk]}${best.val!=null?` (${fmtPrize(best.val)})`:""} em ${best.date}.</div></div>`;
+  html+=`<div class="hist-match" style="margin-top:12px;">`+wins.slice(0,15).map(w=>{
+    const pc=PRIZE_CLASS[w.pk]||"p-low";
+    return `<div class="hist-hit partial"><span class="hist-date">${w.date}</span><span class="hist-prize ${pc}">${PRIZES[w.pk]}</span><span class="hist-desc">${w.nh}N+${w.sh}★${w.val!=null?` · <strong style="color:var(--gold);">${fmtPrize(w.val)}</strong>`:""}</span></div>`;
+  }).join("")+(wins.length>15?`<div class="hist-more">+ ${wins.length-15} outras correspondências premiadas</div>`:"")+`</div>`;
+  el.innerHTML=html;
 }
 
 function verify(){
