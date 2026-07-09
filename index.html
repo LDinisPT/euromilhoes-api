@@ -239,9 +239,24 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 .ta-fbtn{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--dark3);color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
 .ta-fbtn:hover{border-color:rgba(245,200,66,0.35);color:var(--gold);}
 .ta-fbtn.active{background:rgba(245,200,66,0.1);border-color:var(--gold);color:var(--gold);}
-.ta-chart{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 12px 8px;margin-bottom:16px;}
-.ta-chart-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-left:4px;}
-.ta-chart svg{width:100%;height:auto;display:block;}
+.btn-refresh-bar{margin-left:auto;padding:6px 12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:7px;color:var(--blue);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-refresh-bar:hover{background:rgba(56,189,248,0.2);}
+.btn-refresh-bar:disabled{opacity:0.5;cursor:not-allowed;}
+.ta-forecast{margin-bottom:16px;}
+.ta-forecast-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;padding-left:2px;line-height:1.5;}
+.ta-fc-banner{background:linear-gradient(135deg,rgba(245,200,66,0.12),rgba(255,107,53,0.05));border:1.5px solid rgba(245,200,66,0.3);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;}
+.fc-banner-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.fc-banner-cost{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--gold);line-height:1;}
+.fc-banner-sub{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6;}
+.fc-banner-sub strong{color:var(--star);}
+.ta-fc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:7px;}
+.ta-fc-cell{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 5px;text-align:center;}
+.ta-fc-cell.cur{border-color:var(--gold);background:rgba(245,200,66,0.06);}
+.ta-fc-cell.past{opacity:0.55;}
+.fc-month{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;}
+.fc-cost{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);margin-top:3px;}
+.ta-fc-cell.cur .fc-cost{color:var(--gold);}
+.fc-draws{font-size:9px;color:var(--muted);margin-top:1px;}
 .ta-milhao{display:flex;align-items:center;gap:8px;background:rgba(255,107,53,0.05);border:1px solid rgba(255,107,53,0.15);border-radius:8px;padding:7px 12px;margin-bottom:7px;font-size:11px;color:var(--muted);flex-wrap:wrap;}
 .ta-milhao .mcode{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);letter-spacing:1px;}
 .ta-milhao .mloc{color:var(--star);font-weight:500;}
@@ -259,6 +274,7 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 <div class="update-bar">
   <div class="update-dot live" id="updateDot"></div>
   <span id="updateText">A verificar sorteios recentes...</span>
+  <button class="btn-refresh-bar" id="btnRefresh" onclick="manualRefresh()">🔄 Atualizar</button>
 </div>
 
 <!-- PAGE TABS -->
@@ -286,7 +302,7 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
   </div>
 
   <div class="ta-stats" id="taStats"></div>
-  <div id="taChart"></div>
+  <div id="taForecast"></div>
 
   <div class="ta-note">
     ⓘ Balanço assumindo que se joga <strong>todos os sorteios</strong> (terça + sexta). Valores de Portugal, ilíquidos.
@@ -767,21 +783,39 @@ function taDrawBalls(d){
   return nums+`<span class="sep">★</span>`+stars;
 }
 
-function taChartSVG(drawsAsc){
-  if(drawsAsc.length<2)return"";
-  const W=320,H=88,pad=5;let cum=0;
-  const pts=drawsAsc.map((d,i)=>{cum+=d.ganho-TA_COST;return{i,v:cum};});
-  const vals=pts.map(p=>p.v).concat([0]);
-  const mn=Math.min(...vals),mx=Math.max(...vals),rng=(mx-mn)||1;
-  const X=i=>pad+i*(W-2*pad)/(pts.length-1),Y=v=>pad+(mx-v)*(H-2*pad)/rng;
-  const line=pts.map((p,i)=>`${i?"L":"M"}${X(p.i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
-  const zeroY=Y(0).toFixed(1),fim=pts[pts.length-1].v,cor=fim>=0?"var(--green)":"var(--red)";
-  return`<div class="ta-chart"><div class="ta-chart-title">Saldo acumulado — ${taYear}</div>
-    <svg viewBox="0 0 ${W} ${H}">
-      <line x1="${pad}" y1="${zeroY}" x2="${W-pad}" y2="${zeroY}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3"/>
-      <path d="${line}" fill="none" stroke="${cor}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="${X(pts.length-1)}" cy="${Y(fim)}" r="2.5" fill="${cor}"/>
-    </svg></div>`;
+// Nº de sorteios (terças + sextas) de um mês, pelo calendário — sabe-se de antemão.
+function taDrawDaysInMonth(y,m0){let c=0;const d=new Date(y,m0,1);while(d.getMonth()===m0){const w=d.getDay();if(w===2||w===5)c++;d.setDate(d.getDate()+1);}return c;}
+function taDrawsLeftInMonth(y,m0){const t=new Date();t.setHours(0,0,0,0);let c=0;const d=new Date(y,m0,1);while(d.getMonth()===m0){const w=d.getDay();if((w===2||w===5)&&d>=t)c++;d.setDate(d.getDate()+1);}return c;}
+
+function taForecastHTML(yearStr){
+  const y=parseInt(yearStr),now=new Date(),curY=now.getFullYear(),curM=now.getMonth();
+  let banner="";
+  if(y===curY){
+    const tot=taDrawDaysInMonth(y,curM),falta=taDrawsLeftInMonth(y,curM),jog=tot-falta;
+    banner=`<div class="ta-fc-banner">
+      <div class="fc-banner-lbl">A pagar este mês · ${MESES[curM]} ${y}</div>
+      <div class="fc-banner-cost">${fmtPrize(tot*TA_COST)}</div>
+      <div class="fc-banner-sub">${tot} sorteios × €15,00 · já jogados ${jog} (${fmtPrize(jog*TA_COST)}) · <strong>faltam ${falta} = ${fmtPrize(falta*TA_COST)}</strong></div>
+    </div>`;
+  }
+  let cells="",totalAno=0;
+  for(let m=0;m<12;m++){
+    const n=taDrawDaysInMonth(y,m),cost=n*TA_COST;totalAno+=cost;
+    const cls=(y===curY&&m===curM)?" cur":((y<curY||(y===curY&&m<curM))?" past":"");
+    cells+=`<div class="ta-fc-cell${cls}"><div class="fc-month">${MESES[m].slice(0,3)}</div><div class="fc-cost">${fmtPrize(cost)}</div><div class="fc-draws">${n} sort.</div></div>`;
+  }
+  return`<div class="ta-forecast"><div class="ta-forecast-title">💶 Custo por mês — a entregar antes do fim de cada mês · total ${y}: <strong style="color:var(--gold);">${fmtPrize(totalAno)}</strong></div>${banner}<div class="ta-fc-grid">${cells}</div></div>`;
+}
+
+async function manualRefresh(){
+  const btn=document.getElementById("btnRefresh");if(btn){btn.disabled=true;btn.textContent="🔄 A atualizar...";}
+  document.getElementById("updateDot").classList.add("live");
+  milhaoList=null;milhaoByCode.clear();milhaoByDate.clear();
+  await checkUpdates();
+  await loadMilhao();
+  const p=document.querySelector(".page-tab.active");
+  if(document.getElementById("pageTurnoA").style.display!=="none")buildTurnoA();
+  if(btn){btn.disabled=false;btn.textContent="🔄 Atualizar";}
 }
 
 function buildTurnoA(){
@@ -801,8 +835,8 @@ function buildTurnoA(){
   const datas=[...dateMap.keys()].filter(dt=>dt.startsWith(taYear)).sort();
   const draws=datas.map(taDraw).filter(Boolean);
   const container=document.getElementById("taDraws");
-  if(draws.length===0){container.innerHTML=`<div class="empty"><div class="icon">⭐</div><p>Sem sorteios de ${taYear} carregados.</p></div>`;
-    document.getElementById("taStats").innerHTML="";document.getElementById("taChart").innerHTML="";return;}
+  if(draws.length===0){container.innerHTML=`<div class="empty"><div class="icon">⭐</div><p>Ainda sem sorteios de ${taYear} — mas já podes ver o custo previsto por mês acima.</p></div>`;
+    document.getElementById("taStats").innerHTML="";document.getElementById("taForecast").innerHTML=taForecastHTML(taYear);return;}
 
   const nS=draws.length,custo=nS*TA_COST;
   const ganho=draws.reduce((a,d)=>a+d.ganho,0);
@@ -816,8 +850,8 @@ function buildTurnoA(){
     <div class="ta-stat cost"><div class="ta-stat-val">${fmtPrize(custo)}</div><div class="ta-stat-lbl">Custo</div></div>
     <div class="ta-stat ${saldo>=0?"pos":"neg"}"><div class="ta-stat-val">${fmtPrize(saldo)}</div><div class="ta-stat-lbl">Saldo</div></div>`;
 
-  // gráfico do saldo acumulado (ordem cronológica)
-  document.getElementById("taChart").innerHTML=taChartSVG([...draws].sort((a,b)=>a.date.localeCompare(b.date)));
+  // custo por mês (previsão pelo calendário — sabe-se antes do mês acabar)
+  document.getElementById("taForecast").innerHTML=taForecastHTML(taYear);
 
   // recuperação + melhor sorteio
   const rec=custo>0?(ganho/custo*100):0;
