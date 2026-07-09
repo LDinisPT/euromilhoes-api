@@ -233,6 +233,20 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 .ta-draw-desc{font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:0.5px;}
 .ta-best{background:rgba(245,200,66,0.06);border:1px solid rgba(245,200,66,0.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.5;}
 .ta-best strong{color:var(--gold);}
+.ta-controls{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;}
+.ta-select{background:var(--dark3);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;padding:8px 14px;cursor:pointer;outline:none;}
+.ta-filter{display:flex;gap:6px;}
+.ta-fbtn{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--dark3);color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+.ta-fbtn:hover{border-color:rgba(245,200,66,0.35);color:var(--gold);}
+.ta-fbtn.active{background:rgba(245,200,66,0.1);border-color:var(--gold);color:var(--gold);}
+.ta-chart{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 12px 8px;margin-bottom:16px;}
+.ta-chart-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-left:4px;}
+.ta-chart svg{width:100%;height:auto;display:block;}
+.ta-milhao{display:flex;align-items:center;gap:8px;background:rgba(255,107,53,0.05);border:1px solid rgba(255,107,53,0.15);border-radius:8px;padding:7px 12px;margin-bottom:7px;font-size:11px;color:var(--muted);flex-wrap:wrap;}
+.ta-milhao .mcode{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);letter-spacing:1px;}
+.ta-milhao .mloc{color:var(--star);font-weight:500;}
+.ta-tag-quase{display:inline-block;font-family:'DM Mono',monospace;font-size:8px;padding:2px 6px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;background:rgba(56,189,248,0.12);color:var(--blue);border:1px solid rgba(56,189,248,0.25);margin-top:4px;}
+.ta-draw.quase{border-color:rgba(56,189,248,0.3);}
 </style>
 </head>
 <body>
@@ -263,13 +277,21 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
     <div class="ta-hero-sub">5 números + 4 estrelas = <strong>6 apostas</strong> por sorteio · <strong>€15,00</strong>/sorteio</div>
   </div>
 
-  <div class="ta-stats" id="taStats"></div>
-
-  <div class="ta-note" id="taNote">
-    ⓘ Balanço assumindo que se joga <strong>todos os sorteios</strong> (terça + sexta). Valores de Portugal, ilíquidos. Diz-me se só jogam alguns dias e ajusto.
+  <div class="ta-controls">
+    <select id="taYear" class="ta-select" onchange="taSetYear(this.value)"></select>
+    <div class="ta-filter">
+      <button class="ta-fbtn active" id="taFiltAll" onclick="taSetFilter('todos')">Todos</button>
+      <button class="ta-fbtn" id="taFiltWon" onclick="taSetFilter('premiados')">Só premiados</button>
+    </div>
   </div>
 
-  <div class="section-label" style="margin-top:8px;">Sorteios de 2026</div>
+  <div class="ta-stats" id="taStats"></div>
+  <div id="taChart"></div>
+
+  <div class="ta-note">
+    ⓘ Balanço assumindo que se joga <strong>todos os sorteios</strong> (terça + sexta). Valores de Portugal, ilíquidos.
+  </div>
+
   <div id="taDraws"><div class="empty"><div class="icon">⭐</div><p>A carregar sorteios e prémios...</p></div></div>
 </div>
 
@@ -675,16 +697,17 @@ const API_FALLBACK="https://euromillions.api.pedromealha.dev/v1/draws";
 const MILHAO_URL="https://raw.githubusercontent.com/LDinisPT/euromilhoes-api/main/data/milhao.json";
 
 // ── M1LHÃO ──
-let milhaoList=null;const milhaoByCode=new Map();
+let milhaoList=null;const milhaoByCode=new Map(),milhaoByDate=new Map();
 function normCode(s){const m=String(s).toUpperCase().replace(/[^A-Z0-9]/g,"").match(/^([A-Z]{3})(\d{5})$/);return m?`${m[1]} ${m[2]}`:null;}
 async function loadMilhao(){
   if(milhaoList!==null){renderMilhaoRecent();return;}
   try{
     const r=await fetch(MILHAO_URL,{cache:"no-store"});if(!r.ok)throw new Error();
     milhaoList=await r.json();
-    for(const m of milhaoList){const c=normCode(m.code);if(c)milhaoByCode.set(c,m);}
+    for(const m of milhaoList){const c=normCode(m.code);if(c)milhaoByCode.set(c,m);milhaoByDate.set(m.date,m);}
   }catch(e){milhaoList=[];}
   renderMilhaoRecent();
+  if(document.getElementById("pageTurnoA").style.display!=="none")buildTurnoA();
 }
 function renderMilhaoRecent(){
   const el=document.getElementById("milhaoRecent");
@@ -719,6 +742,10 @@ const TURNO_A={nums:[7,21,35,37,45],stars:[2,4,5,6]};
 const TA_PAIRS=(function(){const p=[],s=TURNO_A.stars;for(let i=0;i<s.length;i++)for(let j=i+1;j<s.length;j++)p.push([s[i],s[j]]);return p;})(); // 6 pares de estrelas
 const TA_COST=TA_PAIRS.length*2.5; // €15 por sorteio
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+let taYear="2026",taFilter="todos";
+
+function taSetYear(y){taYear=y;buildTurnoA();}
+function taSetFilter(f){taFilter=f;document.getElementById("taFiltAll").classList.toggle("active",f==="todos");document.getElementById("taFiltWon").classList.toggle("active",f==="premiados");buildTurnoA();}
 
 function taDraw(date){
   const row=dateMap.get(date);if(!row)return null;
@@ -731,7 +758,7 @@ function taDraw(date){
     const pk=`${mn}-${ms}`;
     if(PRIZES[pk]){const pr=pm&&pm.prizes?pm.prizes[pk]:null;if(pr&&pr.prize!=null){ganho+=pr.prize;temValor=true;}linhas.push({pk,val:pr?pr.prize:null});}
   }
-  return{date,dn,ds,mn,ganho,linhas,premiado:linhas.length>0,temValor};
+  return{date,dn,ds,mn,ganho,linhas,premiado:linhas.length>0,temValor,quase:mn>=3};
 }
 
 function taDrawBalls(d){
@@ -740,21 +767,47 @@ function taDrawBalls(d){
   return nums+`<span class="sep">★</span>`+stars;
 }
 
+function taChartSVG(drawsAsc){
+  if(drawsAsc.length<2)return"";
+  const W=320,H=88,pad=5;let cum=0;
+  const pts=drawsAsc.map((d,i)=>{cum+=d.ganho-TA_COST;return{i,v:cum};});
+  const vals=pts.map(p=>p.v).concat([0]);
+  const mn=Math.min(...vals),mx=Math.max(...vals),rng=(mx-mn)||1;
+  const X=i=>pad+i*(W-2*pad)/(pts.length-1),Y=v=>pad+(mx-v)*(H-2*pad)/rng;
+  const line=pts.map((p,i)=>`${i?"L":"M"}${X(p.i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
+  const zeroY=Y(0).toFixed(1),fim=pts[pts.length-1].v,cor=fim>=0?"var(--green)":"var(--red)";
+  return`<div class="ta-chart"><div class="ta-chart-title">Saldo acumulado — ${taYear}</div>
+    <svg viewBox="0 0 ${W} ${H}">
+      <line x1="${pad}" y1="${zeroY}" x2="${W-pad}" y2="${zeroY}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3"/>
+      <path d="${line}" fill="none" stroke="${cor}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${X(pts.length-1)}" cy="${Y(fim)}" r="2.5" fill="${cor}"/>
+    </svg></div>`;
+}
+
 function buildTurnoA(){
   document.getElementById("taKeyBalls").innerHTML=
     TURNO_A.nums.map(n=>`<div class="ball">${n}</div>`).join("")+`<span class="sep">★</span>`+
     TURNO_A.stars.map(s=>`<div class="ball star-b">${s}</div>`).join("");
 
-  const datas=[...dateMap.keys()].filter(dt=>dt>="2026-01-01").sort();
+  // Seletor de ano (anos com sorteios) — preenche uma vez
+  const sel=document.getElementById("taYear");
+  if(sel&&!sel.options.length){
+    const anos=[...new Set([...dateMap.keys()].map(d=>d.slice(0,4)))].sort().reverse();
+    sel.innerHTML=anos.map(a=>`<option value="${a}"${a===taYear?" selected":""}>${a}</option>`).join("");
+  }
+
+  loadMilhao(); // garante dados do M1lhão (re-renderiza quando chegam)
+
+  const datas=[...dateMap.keys()].filter(dt=>dt.startsWith(taYear)).sort();
   const draws=datas.map(taDraw).filter(Boolean);
   const container=document.getElementById("taDraws");
-  if(draws.length===0){container.innerHTML=`<div class="empty"><div class="icon">⭐</div><p>Sem sorteios de 2026 carregados.</p></div>`;return;}
+  if(draws.length===0){container.innerHTML=`<div class="empty"><div class="icon">⭐</div><p>Sem sorteios de ${taYear} carregados.</p></div>`;
+    document.getElementById("taStats").innerHTML="";document.getElementById("taChart").innerHTML="";return;}
 
   const nS=draws.length,custo=nS*TA_COST;
   const ganho=draws.reduce((a,d)=>a+d.ganho,0);
   const premiados=draws.filter(d=>d.ganho>0).length;
-  const saldo=ganho-custo;
-  const semValor=draws.some(d=>d.premiado&&!d.temValor);
+  const saldo=ganho-custo,semValor=draws.some(d=>d.premiado&&!d.temValor);
 
   document.getElementById("taStats").innerHTML=`
     <div class="ta-stat"><div class="ta-stat-val">${nS}</div><div class="ta-stat-lbl">Sorteios</div></div>
@@ -763,35 +816,43 @@ function buildTurnoA(){
     <div class="ta-stat cost"><div class="ta-stat-val">${fmtPrize(custo)}</div><div class="ta-stat-lbl">Custo</div></div>
     <div class="ta-stat ${saldo>=0?"pos":"neg"}"><div class="ta-stat-val">${fmtPrize(saldo)}</div><div class="ta-stat-lbl">Saldo</div></div>`;
 
+  // gráfico do saldo acumulado (ordem cronológica)
+  document.getElementById("taChart").innerHTML=taChartSVG([...draws].sort((a,b)=>a.date.localeCompare(b.date)));
+
   // recuperação + melhor sorteio
   const rec=custo>0?(ganho/custo*100):0;
-  const recHTML=`<div class="ta-best">💶 Recuperado: <strong>${rec.toFixed(1).replace(".",",")}%</strong> do que foi gasto (${fmtPrize(ganho)} de ${fmtPrize(custo)}).</div>`;
+  let html=`<div class="ta-best">💶 Recuperado: <strong>${rec.toFixed(1).replace(".",",")}%</strong> do que foi gasto (${fmtPrize(ganho)} de ${fmtPrize(custo)}).</div>`;
   let best=null;for(const d of draws)if(!best||d.ganho>best.ganho)best=d;
-  const bestHTML=(best&&best.ganho>0)?`<div class="ta-best">🏅 Melhor sorteio: <strong>${best.date}</strong> — ${fmtPrize(best.ganho)} (${best.mn} número${best.mn===1?"":"s"} acertado${best.mn===1?"":"s"}).</div>`:"";
+  if(best&&best.ganho>0)html+=`<div class="ta-best">🏅 Melhor sorteio: <strong>${best.date}</strong> — ${fmtPrize(best.ganho)} (${best.mn} número${best.mn===1?"":"s"} acertado${best.mn===1?"":"s"}).</div>`;
 
   // agrupar por mês (mais recente primeiro)
   const meses={};
   for(const d of draws){const mk=d.date.slice(0,7);(meses[mk]=meses[mk]||[]).push(d);}
-  const chavesMes=Object.keys(meses).sort().reverse();
-  let html=recHTML+bestHTML;
-  for(const mk of chavesMes){
-    const lista=meses[mk].sort((a,b)=>b.date.localeCompare(a.date));
+  for(const mk of Object.keys(meses).sort().reverse()){
+    const todos=meses[mk].sort((a,b)=>b.date.localeCompare(a.date));
+    const lista=taFilter==="premiados"?todos.filter(d=>d.ganho>0):todos;
+    if(lista.length===0)continue;
     const mNome=`${MESES[parseInt(mk.slice(5,7))-1]} ${mk.slice(0,4)}`;
-    const mGanho=lista.reduce((a,d)=>a+d.ganho,0),mCusto=lista.length*TA_COST,mSaldo=mGanho-mCusto;
+    const mGanho=todos.reduce((a,d)=>a+d.ganho,0),mCusto=todos.length*TA_COST,mSaldo=mGanho-mCusto;
     html+=`<div class="ta-month"><div class="ta-month-hd"><div class="ta-month-name">${mNome}</div>
-      <div class="ta-month-sub">${fmtPrize(mGanho)} ganho · ${fmtPrize(mCusto)} custo · saldo <span class="${mSaldo>=0?"pos":"neg"}">${fmtPrize(mSaldo)}</span></div></div>`;
+      <div class="ta-month-sub">${fmtPrize(mGanho)} ganho · saldo <span class="${mSaldo>=0?"pos":"neg"}">${fmtPrize(mSaldo)}</span></div></div>`;
+    // M1lhão do mês (código + onde saiu)
+    const mil=[...milhaoByDate.values()].filter(m=>m.date.startsWith(mk)).sort((a,b)=>b.date.localeCompare(a.date));
+    for(const m of mil)
+      html+=`<div class="ta-milhao">💰 M1lhão <span class="mcode">${m.code}</span>${m.location?` · ganhou em <span class="mloc">${m.location}</span>`:""}<span style="margin-left:auto;font-family:'DM Mono',monospace;">${m.date}</span></div>`;
     for(const d of lista){
       let desc,eur;
       if(d.ganho>0){eur=`<div class="ta-draw-eur">${fmtPrize(d.ganho)}</div>`;desc=`${d.mn} nº · ${d.linhas.length} linha${d.linhas.length===1?"":"s"} premiada${d.linhas.length===1?"":"s"}`;}
       else if(d.premiado&&!d.temValor){eur=`<div class="ta-draw-eur none">?</div>`;desc="premiado (valor indisp.)";}
       else{eur=`<div class="ta-draw-eur none">—</div>`;desc="sem prémio";}
-      html+=`<div class="ta-draw${d.ganho>0?" won":""}"><div class="ta-draw-date">${d.date}</div>
+      const quaseTag=d.quase?`<div class="ta-tag-quase">⚡ Quase · ${d.mn}/5 números</div>`:"";
+      html+=`<div class="ta-draw${d.ganho>0?" won":""}${d.quase?" quase":""}"><div class="ta-draw-date">${d.date}</div>
         <div class="ta-draw-balls">${taDrawBalls(d)}</div>
-        <div class="ta-draw-res">${eur}<div class="ta-draw-desc">${desc}</div></div></div>`;
+        <div class="ta-draw-res">${eur}<div class="ta-draw-desc">${desc}</div>${quaseTag}</div></div>`;
     }
     html+=`</div>`;
   }
-  if(semValor)html+=`<div class="ta-note" style="margin-top:4px;">Alguns sorteios foram premiados mas o valor exato ainda não carregou da API (abre com internet).</div>`;
+  if(semValor)html+=`<div class="ta-note" style="margin-top:4px;">Alguns sorteios foram premiados mas o valor exato ainda não carregou da API.</div>`;
   container.innerHTML=html;
 }
 function normDraw(d){
