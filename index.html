@@ -221,6 +221,9 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 .conta-status{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
 .conta-status.ok{color:var(--green);} .conta-status.edit{color:var(--gold);} .conta-status.err{color:var(--red);}
 .conta-in:disabled{color:var(--text);opacity:1;cursor:default;}
+.euroin{white-space:nowrap;}
+.euroin .eu{color:var(--muted);font-size:10px;padding-left:4px;}
+.euroin input.conta-in{width:50px;padding-left:1px;}
 .conta-in.conta-cell:disabled,.conta-in.conta-name:disabled{background:transparent;}
 .conta-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--card);}
 .conta-tbl{border-collapse:collapse;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;}
@@ -929,14 +932,18 @@ function buildTurnoA(){
   const nS=draws.length,custo=nS*TA_COST;
   const ganho=draws.reduce((a,d)=>a+d.ganho,0);
   const premiados=draws.filter(d=>d.ganho>0).length;
-  const saldo=ganho-custo,semValor=draws.some(d=>d.premiado&&!d.temValor);
+  const semValor=draws.some(d=>d.premiado&&!d.temValor);
+  // Saldo = pagamento dos sócios (quotas) − apostado. Usa os dados da Conta (nuvem) para este ano.
+  const temConta=conta&&conta.membros&&(parseInt(taYear)===conta.ano);
+  const quotasAno=temConta?Array.from({length:12},(_,i)=>contaQuotas(i)).reduce((a,b)=>a+b,0):0;
+  const saldo=temConta?(quotasAno-custo):(ganho-custo);
 
   document.getElementById("taStats").innerHTML=`
     <div class="ta-stat"><div class="ta-stat-val">${nS}</div><div class="ta-stat-lbl">Sorteios</div></div>
     <div class="ta-stat win"><div class="ta-stat-val">${premiados}</div><div class="ta-stat-lbl">Premiados</div></div>
     <div class="ta-stat gold"><div class="ta-stat-val">${fmtPrize(ganho)}</div><div class="ta-stat-lbl">Ganho</div></div>
-    <div class="ta-stat cost"><div class="ta-stat-val">${fmtPrize(custo)}</div><div class="ta-stat-lbl">Custo</div></div>
-    <div class="ta-stat ${saldo>=0?"pos":"neg"}"><div class="ta-stat-val">${fmtPrize(saldo)}</div><div class="ta-stat-lbl">Saldo</div></div>`;
+    <div class="ta-stat cost"><div class="ta-stat-val">${fmtPrize(custo)}</div><div class="ta-stat-lbl">Apostado</div></div>
+    <div class="ta-stat ${saldo>=0?"pos":"neg"}"><div class="ta-stat-val">${fmtPrize(saldo)}</div><div class="ta-stat-lbl">${temConta?"Sócios − Apostas":"Saldo"}</div></div>`;
 
   // custo por mês (previsão pelo calendário — sabe-se antes do mês acabar)
   document.getElementById("taForecast").innerHTML=taForecastHTML(taYear);
@@ -1032,13 +1039,15 @@ function cNum(v){const n=parseFloat(String(v).replace(",","."));return isNaN(n)?
 function contaCacheLocal(){localStorage.setItem("ta_conta_v1",JSON.stringify(conta));}
 function contaQuotas(i){let c=0;for(let r=0;r<conta.membros.length;r++)if((conta.cells[r+"-"+i]||"").trim())c++;return c*QUOTA;}
 function contaPago(r){let c=0;for(let i=0;i<12;i++)if((conta.cells[r+"-"+i]||"").trim())c++;return c*QUOTA;}
+function contaApostas(i){return taDrawDaysInMonth(conta.ano,i)*15;} // sorteios do mês × €15
 function contaTransitar(i){return i===0?cNum(conta.fin.transitar[0]):contaEmCaixa(i-1);}
-function contaEmCaixa(i){return contaTransitar(i)+cNum(conta.fin.receitas[i])+contaQuotas(i)-cNum(conta.fin.desp[i])-cNum(conta.fin.conv[i]);}
+function contaEmCaixa(i){return contaTransitar(i)+cNum(conta.fin.receitas[i])+contaQuotas(i)-contaApostas(i)-cNum(conta.fin.conv[i]);}
 
 function recomputeConta(){
   for(let i=0;i<12;i++){
     const te=document.getElementById("c-trans-"+i);if(te)te.textContent=fmtPrize(contaTransitar(i));
     const qe=document.getElementById("c-quotas-"+i);if(qe)qe.textContent=fmtPrize(contaQuotas(i));
+    const ap=document.getElementById("c-apostas-"+i);if(ap)ap.textContent=fmtPrize(contaApostas(i));
     const ee=document.getElementById("c-emc-"+i);if(ee)ee.textContent=fmtPrize(contaEmCaixa(i));
   }
   for(let r=0;r<conta.membros.length;r++){const pg=document.getElementById("c-pago-"+r);if(pg)pg.textContent=fmtPrize(contaPago(r));}
@@ -1057,10 +1066,10 @@ function renderConta(){
   if(!conta)return;
   document.getElementById("contaAno").textContent=conta.ano;
   const dis=contaEditMode?"":"disabled";
-  const inputRow=(key,lbl)=>{let s=`<tr><th class="rub">${lbl}</th>`;for(let i=0;i<12;i++){if(key==="transitar"&&i>0)s+=`<td><span class="conta-calc" id="c-trans-${i}"></span></td>`;else s+=`<td><input class="conta-in" type="number" step="0.01" ${dis} value="${conta.fin[key][i]||0}" data-k="${key}" data-i="${i}"></td>`;}return s+"</tr>";};
+  const inputRow=(key,lbl)=>{let s=`<tr><th class="rub">${lbl}</th>`;for(let i=0;i<12;i++){if(key==="transitar"&&i>0)s+=`<td><span class="conta-calc" id="c-trans-${i}"></span></td>`;else s+=`<td class="euroin"><span class="eu">€</span><input class="conta-in" type="number" step="0.01" ${dis} value="${conta.fin[key][i]||0}" data-k="${key}" data-i="${i}"></td>`;}return s+"</tr>";};
   const calcRow=(lbl,pref,cls)=>{let s=`<tr class="${cls||''}"><th class="rub">${lbl}</th>`;for(let i=0;i<12;i++)s+=`<td><span class="conta-calc" id="${pref}-${i}"></span></td>`;return s+"</tr>";};
   let h="<thead><tr><th class='rub'>Rubrica</th>"+CMESES_N.map(m=>`<th>${m}</th>`).join("")+"</tr></thead><tbody>";
-  h+=inputRow("transitar","A transitar")+inputRow("receitas","Prémios")+calcRow("Quotas","c-quotas")+inputRow("desp","Apostas")+inputRow("conv","Convívios")+calcRow("Em Caixa","c-emc","emcaixa")+"</tbody>";
+  h+=inputRow("transitar","A transitar")+inputRow("receitas","Prémios")+calcRow("Quotas","c-quotas")+calcRow("Apostas","c-apostas")+inputRow("conv","Convívios")+calcRow("Em Caixa","c-emc","emcaixa")+"</tbody>";
   const fin=document.getElementById("contaFin");fin.innerHTML=h;
   fin.querySelectorAll("input.conta-in").forEach(inp=>inp.addEventListener("input",e=>{conta.fin[e.target.dataset.k][+e.target.dataset.i]=cNum(e.target.value);recomputeConta();}));
 
@@ -1073,12 +1082,21 @@ function renderConta(){
   m+="</tbody>";
   const mt=document.getElementById("contaMembros");mt.innerHTML=m;
   mt.querySelectorAll("input.conta-name").forEach(inp=>inp.addEventListener("input",e=>{conta.membros[+e.target.dataset.r]=e.target.value;contaCacheLocal();}));
-  mt.querySelectorAll("input.conta-cell").forEach(inp=>inp.addEventListener("input",e=>{const k=e.target.dataset.r+"-"+e.target.dataset.m;if(e.target.value.trim())conta.cells[k]=e.target.value;else delete conta.cells[k];recomputeConta();}));
+  mt.querySelectorAll("input.conta-cell").forEach(inp=>{
+    inp.addEventListener("input",e=>{const k=e.target.dataset.r+"-"+e.target.dataset.m;if(e.target.value.trim())conta.cells[k]=e.target.value;else delete conta.cells[k];recomputeConta();});
+    // Escrever só o dia → completa "DD/mês" sozinho (mês = coluna)
+    inp.addEventListener("blur",e=>{const mi=+e.target.dataset.m,d=e.target.value.trim().match(/^(\d{1,2})\/?$/);if(d){const v=d[1].padStart(2,"0")+"/"+CMESES[mi];e.target.value=v;conta.cells[e.target.dataset.r+"-"+mi]=v;recomputeConta();}});
+  });
 
   contaButtons();
   recomputeConta();
 }
 
+async function contaPreload(){  // carrega a Conta em memória (para o Saldo do Turno A)
+  if(conta)return;
+  try{const r=await fetch(CONTA_URL,{cache:"no-store"});if(r.ok){const d=await r.json();if(d){conta=d;if(!conta.cells)conta.cells={};contaCacheLocal();}}}catch(e){}
+  if(conta&&document.getElementById("pageTurnoA").style.display!=="none")buildTurnoA();
+}
 async function contaAbrir(){
   if(contaEditMode){renderConta();return;}   // não recarregar enquanto se edita
   contaStatus("☁ A ligar à nuvem...","");
@@ -1112,6 +1130,7 @@ buildSysPills();updateBtn();updateCounts();
 document.querySelector(".pill[data-keys=\"2\"]").classList.add("active");
 setPage("turnoa");   // Turno A é a página inicial
 checkUpdates();
+contaPreload();
 </script>
 </body>
 </html>
