@@ -953,7 +953,7 @@ function buildTurnoA(){
   const rec=custo>0?(ganho/custo*100):0;
   let html=`<div class="ta-best">💶 Recuperado: <strong>${rec.toFixed(1).replace(".",",")}%</strong> do que foi gasto (${fmtPrize(ganho)} de ${fmtPrize(custo)}).</div>`;
   let best=null;for(const d of draws)if(!best||d.ganho>best.ganho)best=d;
-  if(best&&best.ganho>0)html+=`<div class="ta-best">🏅 Melhor sorteio: <strong>${best.date}</strong> — ${fmtPrize(best.ganho)} (${best.mn} número${best.mn===1?"":"s"} acertado${best.mn===1?"":"s"}).</div>`;
+  if(best&&best.ganho>0)html+=`<div class="ta-best">🏅 Melhor sorteio: <strong>${best.date}</strong> — ${fmtPrize(best.ganho)} (${best.mn} número${best.mn===1?"":"s"} acertado${best.mn===1?"":"s"}, premiou em ${best.linhas.length} das 6 apostas).</div>`;
 
   // agrupar por mês (mais recente primeiro)
   const meses={};
