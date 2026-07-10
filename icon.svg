@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a4079"/>
+      <stop offset="1" stop-color="#16224d"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd45e"/>
+      <stop offset="1" stop-color="#e0a11c"/>
+    </linearGradient>
+    <path id="star" d="M50 3 L61 37 L97 37 L68 59 L79 95 L50 73 L21 95 L32 59 L3 37 L39 37 Z"/>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <use href="#star" transform="translate(146 96) scale(2.2)" fill="url(#gold)"/>
+  <use href="#star" transform="translate(60 300) scale(1.15)" fill="url(#gold)" opacity="0.92"/>
+  <use href="#star" transform="translate(330 320) scale(1.5)" fill="url(#gold)" opacity="0.92"/>
+  <text x="256" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="70" fill="#ffffff" letter-spacing="2">TURNO A</text>
+</svg>
