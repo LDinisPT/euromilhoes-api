@@ -933,17 +933,18 @@ function buildTurnoA(){
   const ganho=draws.reduce((a,d)=>a+d.ganho,0);
   const premiados=draws.filter(d=>d.ganho>0).length;
   const semValor=draws.some(d=>d.premiado&&!d.temValor);
-  // Saldo = pagamento dos sócios (quotas) − apostado. Usa os dados da Conta (nuvem) para este ano.
+  // Saldo em Caixa = dinheiro real do turno (Em Caixa da Conta, mês corrente). Requer dados da nuvem.
   const temConta=conta&&conta.membros&&(parseInt(taYear)===conta.ano);
-  const quotasAno=temConta?Array.from({length:12},(_,i)=>contaQuotas(i)).reduce((a,b)=>a+b,0):0;
-  const saldo=temConta?(quotasAno-custo):(ganho-custo);
+  let saldo,saldoLbl;
+  if(temConta){const now=new Date();const mi=(now.getFullYear()===conta.ano)?now.getMonth():11;saldo=contaEmCaixa(mi);saldoLbl="Em Caixa";}
+  else{saldo=ganho-custo;saldoLbl="Saldo";}
 
   document.getElementById("taStats").innerHTML=`
     <div class="ta-stat"><div class="ta-stat-val">${nS}</div><div class="ta-stat-lbl">Sorteios</div></div>
     <div class="ta-stat win"><div class="ta-stat-val">${premiados}</div><div class="ta-stat-lbl">Premiados</div></div>
     <div class="ta-stat gold"><div class="ta-stat-val">${fmtPrize(ganho)}</div><div class="ta-stat-lbl">Ganho</div></div>
     <div class="ta-stat cost"><div class="ta-stat-val">${fmtPrize(custo)}</div><div class="ta-stat-lbl">Apostado</div></div>
-    <div class="ta-stat ${saldo>=0?"pos":"neg"}"><div class="ta-stat-val">${fmtPrize(saldo)}</div><div class="ta-stat-lbl">${temConta?"Sócios − Apostas":"Saldo"}</div></div>`;
+    <div class="ta-stat ${saldo>=0?"pos":"neg"}"><div class="ta-stat-val">${fmtPrize(saldo)}</div><div class="ta-stat-lbl">${saldoLbl}</div></div>`;
 
   // custo por mês (previsão pelo calendário — sabe-se antes do mês acabar)
   document.getElementById("taForecast").innerHTML=taForecastHTML(taYear);
