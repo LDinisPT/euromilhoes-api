@@ -1,0 +1,41 @@
+name: Backup Conta
+
+# Guarda uma cópia dos dados da Conta (nuvem) no repositório, de 6 em 6 horas.
+# Cada commit é uma "fotografia" — o histórico do Git permite voltar atrás
+# a qualquer versão anterior se algo for apagado por engano.
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descarregar e validar a Conta
+        run: |
+          curl -s -m 30 "https://euromilhoes-conta.luisfmdinis.workers.dev" -o /tmp/conta.json || true
+          if python3 -c "import json; d=json.load(open('/tmp/conta.json')); assert isinstance(d,dict) and 'membros' in d and d.get('cells')" 2>/dev/null; then
+            cp /tmp/conta.json data/conta-backup.json
+            echo "Backup válido: $(python3 -c "import json;d=json.load(open('/tmp/conta.json'));print(len(d['cells']),'pagamentos')")"
+          else
+            echo "Resposta da nuvem inválida ou vazia — NÃO atualizo o backup (protege o último bom)."
+          fi
+
+      - name: Commit se houver alterações
+        run: |
+          if [ -n "$(git status --porcelain data/conta-backup.json)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/conta-backup.json
+            git commit -m "Backup Conta ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+            git push
+          else
+            echo "Sem alteracoes desde o ultimo backup."
+          fi
