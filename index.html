@@ -858,6 +858,7 @@ function taDraw(date){
   const row=dateMap.get(date);if(!row)return null;
   const dn=row.slice(1,6),ds=[row[6],row[7]];
   const mn=TURNO_A.nums.filter(n=>dn.includes(n)).length;
+  const mstars=TURNO_A.stars.filter(s=>ds.includes(s)).length; // estrelas nossas que saíram (das 4)
   const pm=prizeMap.get(date);
   let ganho=0,temValor=false;const linhas=[];
   for(const pair of TA_PAIRS){
@@ -865,7 +866,7 @@ function taDraw(date){
     const pk=`${mn}-${ms}`;
     if(PRIZES[pk]){const pr=pm&&pm.prizes?pm.prizes[pk]:null;if(pr&&pr.prize!=null){ganho+=pr.prize;temValor=true;}linhas.push({pk,val:pr?pr.prize:null});}
   }
-  return{date,dn,ds,mn,ganho,linhas,premiado:linhas.length>0,temValor,quase:mn>=3};
+  return{date,dn,ds,mn,mstars,ganho,linhas,premiado:linhas.length>0,temValor,quase:mn>=3};
 }
 
 function taDrawBalls(d){
@@ -953,7 +954,7 @@ function buildTurnoA(){
   const rec=custo>0?(ganho/custo*100):0;
   let html=`<div class="ta-best">💶 Recuperado: <strong>${rec.toFixed(1).replace(".",",")}%</strong> do que foi gasto (${fmtPrize(ganho)} de ${fmtPrize(custo)}).</div>`;
   let best=null;for(const d of draws)if(!best||d.ganho>best.ganho)best=d;
-  if(best&&best.ganho>0)html+=`<div class="ta-best">🏅 Melhor sorteio: <strong>${best.date}</strong> — ${fmtPrize(best.ganho)} (${best.mn} número${best.mn===1?"":"s"} acertado${best.mn===1?"":"s"}, premiou em ${best.linhas.length} das 6 apostas).</div>`;
+  if(best&&best.ganho>0)html+=`<div class="ta-best">🏅 Melhor sorteio: <strong>${best.date}</strong> — ${fmtPrize(best.ganho)} (acertados ${best.mn} número${best.mn===1?"":"s"} e ${best.mstars} estrela${best.mstars===1?"":"s"}).</div>`;
 
   // agrupar por mês (mais recente primeiro)
   const meses={};
