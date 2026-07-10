@@ -973,7 +973,7 @@ function buildTurnoA(){
       html+=`<div class="ta-milhao">💰 M1lhão <span class="mcode">${m.code}</span>${m.location?` · ganhou em <span class="mloc">${m.location}</span>`:""}<span style="margin-left:auto;font-family:'DM Mono',monospace;">${m.date}</span></div>`;
     for(const d of lista){
       let desc,eur;
-      if(d.ganho>0){eur=`<div class="ta-draw-eur">${fmtPrize(d.ganho)}</div>`;desc=`${d.mn} nº · ${d.linhas.length} linha${d.linhas.length===1?"":"s"} premiada${d.linhas.length===1?"":"s"}`;}
+      if(d.ganho>0){eur=`<div class="ta-draw-eur">${fmtPrize(d.ganho)}</div>`;desc=`${d.mn} número${d.mn===1?"":"s"} e ${d.mstars} estrela${d.mstars===1?"":"s"}`;}
       else if(d.premiado&&!d.temValor){eur=`<div class="ta-draw-eur none">?</div>`;desc="premiado (valor indisp.)";}
       else{eur=`<div class="ta-draw-eur none">—</div>`;desc="sem prémio";}
       const quaseTag=d.quase?`<div class="ta-tag-quase">⚡ Quase · ${d.mn}/5 números</div>`:"";
