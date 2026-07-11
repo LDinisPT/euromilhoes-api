@@ -96,10 +96,31 @@ def _num(x):
         return None
 
 
-def scrape_prizes_pt(date_iso):
-    """Devolve {'5-2': {'prize':..,'winners':..}, ...} ou {} se não encontrar."""
+def scrape_draw_full(date_iso):
+    """Sorteio completo (números + estrelas + prémios PT) do euro-millions.com,
+    ou None se a página não tiver resultado. Usado quando a API principal falha."""
     dd = datetime.strptime(date_iso, "%Y-%m-%d").strftime("%d-%m-%Y")
-    page = fetch_text(EM_DRAW.format(dd))
+    try:
+        page = fetch_text(EM_DRAW.format(dd))
+    except Exception:
+        return None
+    m = re.search(r'id="ballsAscending">(.*?)</ul>', page, re.S)
+    if not m:
+        return None
+    bloco = m.group(1)
+    nums = [int(x) for x in re.findall(r'class="resultBall ball">\s*(\d+)', bloco)]
+    stars = [int(x) for x in re.findall(r'class="resultBall lucky-star">\s*(\d+)', bloco)]
+    if not (len(nums) == 5 and len(set(nums)) == 5 and all(1 <= n <= 50 for n in nums)
+            and len(stars) == 2 and all(1 <= s <= 12 for s in stars)):
+        return None
+    prizes = _parse_prizes_pt(page)
+    jackpot = prizes.get("5-2", {}).get("prize")
+    return {"date": date_iso, "nums": sorted(nums), "stars": sorted(stars),
+            "has_winner": (prizes.get("5-2", {}).get("winners") or 0) > 0,
+            "jackpot": jackpot, "prizes": prizes}
+
+
+def _parse_prizes_pt(page):
     m = re.search(r'<div id="PrizePT">(.*?)</table>', page, re.S)
     if not m:
         return {}
@@ -126,6 +147,24 @@ def scrape_prizes_pt(date_iso):
     return prizes
 
 
+def scrape_prizes_pt(date_iso):
+    """Devolve {'5-2': {'prize':..,'winners':..}, ...} ou {} se não encontrar."""
+    dd = datetime.strptime(date_iso, "%Y-%m-%d").strftime("%d-%m-%Y")
+    return _parse_prizes_pt(fetch_text(EM_DRAW.format(dd)))
+
+
+def datas_de_sorteio(desde_iso, ate):
+    """Terças e sextas depois de `desde_iso` até à data `ate` (inclusive)."""
+    from datetime import date as _date, timedelta
+    d = datetime.strptime(desde_iso, "%Y-%m-%d").date() + timedelta(days=1)
+    out = []
+    while d <= ate:
+        if d.weekday() in (1, 4):  # ter=1, sex=4
+            out.append(d.strftime("%Y-%m-%d"))
+        d += timedelta(days=1)
+    return out
+
+
 def main():
     with open(DATA, encoding="utf-8") as f:
         por_data = {d["date"]: d for d in json.load(f)}
@@ -150,6 +189,21 @@ def main():
         print("API pedromealha: OK.")
     except Exception as e:
         print(f"API pedromealha indisponivel ({e}). A usar recurso euro-millions.com.")
+
+    # Fonte 1b: sorteios NOVOS em falta (terças/sextas desde o último) via euro-millions.com
+    from datetime import date as _date
+    ultimo = max(por_data)
+    for dt in datas_de_sorteio(ultimo, _date.today()):
+        if dt in por_data:
+            continue
+        r = scrape_draw_full(dt)
+        if r:
+            por_data[dt] = r
+            novos += 1
+            print(f"  novo sorteio {dt} via euro-millions.com: {r['nums']} + {r['stars']}")
+        else:
+            print(f"  {dt}: ainda sem resultado publicado.")
+        time.sleep(DELAY)
 
     # Fonte 2: preencher prémios em falta, por lotes (mais recentes primeiro)
     faltam = [d for d in sorted(por_data.values(), key=lambda x: x["date"], reverse=True)
