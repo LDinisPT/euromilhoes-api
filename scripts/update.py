@@ -165,47 +165,57 @@ def datas_de_sorteio(desde_iso, ate):
     return out
 
 
+SC_URL = "https://www.jogossantacasa.pt/web/SCCartazResult/euroMilhoes"
+
+def scrape_santacasa_latest():
+    """Último sorteio publicado pela Santa Casa (oficial): números + estrelas.
+    Sem prémios (esses vêm do backfill euro-millions). Devolve dict ou None."""
+    try:
+        h = fetch_text(SC_URL)
+    except Exception:
+        return None
+    md = re.search(r"Data do Sorteio\s*[-–]\s*(\d{2})/(\d{2})/(\d{4})", h)
+    mk = re.search(r"Chave[\s\S]{0,300}?(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*\+\s*(\d+)\s+(\d+)", h)
+    if not (md and mk):
+        return None
+    date = f"{md.group(3)}-{md.group(2)}-{md.group(1)}"
+    g = [int(x) for x in mk.groups()]
+    nums, stars = sorted(g[:5]), sorted(g[5:])
+    if not (len(set(nums)) == 5 and all(1 <= n <= 50 for n in nums) and all(1 <= s <= 12 for s in stars)):
+        return None
+    return {"date": date, "nums": nums, "stars": stars,
+            "has_winner": False, "jackpot": None, "prizes": {}}
+
+
 def main():
     with open(DATA, encoding="utf-8") as f:
         por_data = {d["date"]: d for d in json.load(f)}
     com_premios_antes = sum(1 for d in por_data.values() if d.get("prizes"))
     novos = 0
 
-    # Fonte 1: API (histórico completo com prémios, se estiver acessível)
-    try:
-        for d in fetch_json(API_URL):
-            r = norm_api(d)
-            if not r:
-                continue
-            antigo = por_data.get(r["date"])
-            if r["date"] not in por_data:
-                novos += 1
-            # Não apagar prémios já conhecidos se a API os devolver vazios
-            if antigo and antigo.get("prizes") and not r.get("prizes"):
-                r["prizes"] = antigo["prizes"]
-                r["jackpot"] = antigo.get("jackpot")
-                r["has_winner"] = antigo.get("has_winner")
-            por_data[r["date"]] = r
-        print("API pedromealha: OK.")
-    except Exception as e:
-        print(f"API pedromealha indisponivel ({e}). A usar recurso euro-millions.com.")
-
-    # Fonte 1b: sorteios NOVOS em falta (terças/sextas desde o último) via euro-millions.com
+    # ── Sorteios NOVOS (terças/sextas desde o último registado) ──
+    # Fonte 1: euro-millions.com (por data, com prémios PT)
+    # Fonte 2: Santa Casa (oficial; só o último sorteio publicado)
     from datetime import date as _date
     ultimo = max(por_data)
     for dt in datas_de_sorteio(ultimo, _date.today()):
         if dt in por_data:
             continue
         r = scrape_draw_full(dt)
+        fonte = "euro-millions.com"
+        if not r:
+            sc = scrape_santacasa_latest()
+            if sc and sc["date"] == dt:
+                r, fonte = sc, "Santa Casa"
         if r:
             por_data[dt] = r
             novos += 1
-            print(f"  novo sorteio {dt} via euro-millions.com: {r['nums']} + {r['stars']}")
+            print(f"  novo sorteio {dt} via {fonte}: {r['nums']} + {r['stars']}")
         else:
-            print(f"  {dt}: ainda sem resultado publicado.")
+            print(f"  {dt}: ainda sem resultado publicado (euro-millions e Santa Casa).")
         time.sleep(DELAY)
 
-    # Fonte 2: preencher prémios em falta, por lotes (mais recentes primeiro)
+    # ── Prémios em falta: euro-millions.com, por lotes (mais recentes primeiro) ──
     faltam = [d for d in sorted(por_data.values(), key=lambda x: x["date"], reverse=True)
               if not d.get("prizes")]
     raspados = 0
@@ -221,6 +231,31 @@ def main():
             d["has_winner"] = (p.get("5-2", {}).get("winners") or 0) > 0
             raspados += 1
         time.sleep(DELAY)
+
+    # ── Fonte 3 (última opção): API pedromealha — só ADICIONA o que faltar. ──
+    # Nunca substitui registos existentes; útil se as outras fontes falharem
+    # ou para preencher prémios antigos em falta.
+    ainda_faltam_novos = bool(datas_de_sorteio(max(por_data), _date.today()))
+    ainda_faltam_premios = any(not d.get("prizes") for d in por_data.values())
+    if ainda_faltam_novos or ainda_faltam_premios:
+        try:
+            for d in fetch_json(API_URL):
+                r = norm_api(d)
+                if not r:
+                    continue
+                antigo = por_data.get(r["date"])
+                if antigo is None:
+                    por_data[r["date"]] = r
+                    novos += 1
+                elif not antigo.get("prizes") and r.get("prizes"):
+                    antigo["prizes"] = r["prizes"]
+                    antigo["jackpot"] = r.get("jackpot")
+                    antigo["has_winner"] = r.get("has_winner")
+            print("API pedromealha (3.ª opção): consultada.")
+        except Exception as e:
+            print(f"API pedromealha (3.ª opção) indisponivel ({e}) — sem problema.")
+    else:
+        print("Tudo completo sem precisar da pedromealha.")
 
     saida = sorted(por_data.values(), key=lambda x: x["date"], reverse=True)
     with open(DATA, "w", encoding="utf-8") as f:
