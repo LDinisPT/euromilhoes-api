@@ -187,11 +187,52 @@ def scrape_santacasa_latest():
             "has_winner": False, "jackpot": None, "prizes": {}}
 
 
+# ── Chave do Turno A (para a mensagem de notificação) ──
+TA_NUMS = {7, 21, 35, 37, 45}
+TA_STARS = [2, 4, 5, 6]
+TA_PAIRS = [(TA_STARS[i], TA_STARS[j]) for i in range(4) for j in range(i + 1, 4)]
+PRIZE_TIERS = {"5-2", "5-1", "5-0", "4-2", "4-1", "3-2", "4-0", "2-2", "3-1", "3-0", "1-2", "2-1", "2-0"}
+
+
+def turno_a_result(rec):
+    nums, stars = set(rec["nums"]), set(rec["stars"])
+    mn = len(TA_NUMS & nums)
+    mstars = len(set(TA_STARS) & stars)
+    ganho, prizes = 0.0, (rec.get("prizes") or {})
+    for pa, pb in TA_PAIRS:
+        pk = f"{mn}-{len({pa, pb} & stars)}"
+        if pk in PRIZE_TIERS:
+            info = prizes.get(pk)
+            if info and info.get("prize") is not None:
+                ganho += info["prize"]
+    return mn, mstars, round(ganho, 2)
+
+
+def escrever_push_msg(rec, path):
+    dd = datetime.strptime(rec["date"], "%Y-%m-%d").strftime("%d/%m")
+    nums = "·".join(str(n) for n in rec["nums"])
+    stars = "·".join(str(s) for s in rec["stars"])
+    mn, mstars, ganho = turno_a_result(rec)
+    if ganho > 0:
+        s1 = "s" if mn != 1 else ""
+        s2 = "s" if mstars != 1 else ""
+        linha = f"Turno A: GANHOU €{ganho:.2f} ({mn} numero{s1} e {mstars} estrela{s2})"
+    else:
+        linha = "Turno A: sem premio"
+    msg = {"title": f"Euromilhoes · {dd}",
+           "body": f"{nums} * {stars}\n{linha}",
+           "url": "https://ldinispt.github.io/euromilhoes-api/"}
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(msg, f, ensure_ascii=False)
+    print(f"push-msg.json escrito: {msg['title']} | {linha}")
+
+
 def main():
     with open(DATA, encoding="utf-8") as f:
         por_data = {d["date"]: d for d in json.load(f)}
     com_premios_antes = sum(1 for d in por_data.values() if d.get("prizes"))
     novos = 0
+    novas_datas = []
 
     # ── Sorteios NOVOS (terças/sextas desde o último registado) ──
     # Fonte 1: euro-millions.com (por data, com prémios PT)
@@ -210,6 +251,7 @@ def main():
         if r:
             por_data[dt] = r
             novos += 1
+            novas_datas.append(dt)
             print(f"  novo sorteio {dt} via {fonte}: {r['nums']} + {r['stars']}")
         else:
             print(f"  {dt}: ainda sem resultado publicado (euro-millions e Santa Casa).")
@@ -260,6 +302,14 @@ def main():
     saida = sorted(por_data.values(), key=lambda x: x["date"], reverse=True)
     with open(DATA, "w", encoding="utf-8") as f:
         json.dump(saida, f, ensure_ascii=False, indent=2)
+
+    # ── Mensagem de notificação (se houve sorteio novo) ──
+    msg_path = os.path.join(BASE, "push-msg.json")
+    if os.path.exists(msg_path):
+        os.remove(msg_path)
+    if novas_datas:
+        dt = max(novas_datas)
+        escrever_push_msg(por_data[dt], msg_path)
 
     com_premios = sum(1 for d in saida if d.get("prizes"))
     faltam_ainda = len(saida) - com_premios

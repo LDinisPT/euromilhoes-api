@@ -38,3 +38,17 @@ jobs:
           else
             echo "Sem alteracoes."
           fi
+
+      - name: Notificar (se houve sorteio novo)
+        env:
+          VAPID_PUBLIC: ${{ secrets.VAPID_PUBLIC }}
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          VAPID_SUBJECT: "mailto:luisfmdinis@gmail.com"
+          PUSH_SECRET: ${{ secrets.PUSH_SECRET }}
+        run: |
+          if [ -f push-msg.json ]; then
+            npm install web-push --no-save --silent
+            node scripts/send-push.js
+          else
+            echo "Sem sorteio novo — nada a notificar."
+          fi

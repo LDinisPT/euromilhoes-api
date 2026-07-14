@@ -314,6 +314,7 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 <div class="update-bar">
   <div class="update-dot live" id="updateDot"></div>
   <span id="updateText">A verificar sorteios recentes...</span>
+  <button class="btn-refresh-bar" id="btnNotif" onclick="toggleNotif()" style="display:none;">🔔 Avisos</button>
   <button class="btn-refresh-bar" id="btnRefresh" onclick="manualRefresh()">🔄 Atualizar</button>
 </div>
 
@@ -918,6 +919,38 @@ async function manualRefresh(){
   if(btn){btn.disabled=false;btn.textContent="🔄 Atualizar";}
 }
 
+// ── NOTIFICAÇÕES (Web Push) ──
+const VAPID_PUBLIC="BDZuFg-TMyPKbEJ5AYu_I_JkoWYFhUcTxBhgMAxGLSFC84kudQiNT4TagtimM6Xpf27c5NCiBbtwEkMxxqgAfnI";
+const PUSH_SUBSCRIBE=CONTA_URL+"/push/subscribe";
+let swReg=null;
+function b64ToUint8(b64){const pad="=".repeat((4-b64.length%4)%4);const s=(b64+pad).replace(/-/g,"+").replace(/_/g,"/");const raw=atob(s);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
+async function initNotif(){
+  if(!("serviceWorker" in navigator)||!("PushManager" in window))return; // não suportado
+  try{swReg=await navigator.serviceWorker.register("sw.js");}catch(e){return;}
+  const btn=document.getElementById("btnNotif");btn.style.display="";
+  const sub=await swReg.pushManager.getSubscription();
+  setNotifBtn(sub?"on":(Notification.permission==="denied"?"denied":"off"));
+}
+function setNotifBtn(state){
+  const b=document.getElementById("btnNotif");if(!b)return;
+  if(state==="on"){b.textContent="🔔 Avisos ✓";b.style.color="var(--green)";b.style.borderColor="var(--green)";}
+  else if(state==="denied"){b.textContent="🔔 Bloqueado";b.style.opacity="0.6";}
+  else{b.textContent="🔔 Ativar avisos";b.style.color="";b.style.borderColor="";}
+}
+async function toggleNotif(){
+  if(!swReg)return;
+  const existing=await swReg.pushManager.getSubscription();
+  if(existing){alert("Já estás a receber avisos neste dispositivo. ✓");return;}
+  const perm=await Notification.requestPermission();
+  if(perm!=="granted"){setNotifBtn(perm==="denied"?"denied":"off");if(perm==="denied")alert("As notificações estão bloqueadas. Ativa-as nas definições do site (o cadeado ao lado do endereço).");return;}
+  try{
+    const sub=await swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToUint8(VAPID_PUBLIC)});
+    const r=await fetch(PUSH_SUBSCRIBE,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(sub)});
+    if(!r.ok)throw new Error();
+    setNotifBtn("on");alert("Avisos ativados! Vais receber uma notificação a cada sorteio novo. 🎉");
+  }catch(e){setNotifBtn("off");alert("Não consegui ativar os avisos. Tenta de novo.");}
+}
+
 function buildTurnoA(){
   document.getElementById("taKeyBalls").innerHTML=
     TURNO_A.nums.map(n=>`<div class="ball">${n}</div>`).join("")+`<span class="sep">★</span>`+
@@ -1141,6 +1174,7 @@ document.querySelector(".pill[data-keys=\"2\"]").classList.add("active");
 setPage("turnoa");   // Turno A é a página inicial
 checkUpdates();
 contaPreload();
+initNotif();
 </script>
 </body>
 </html>
