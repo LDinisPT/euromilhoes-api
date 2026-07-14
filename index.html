@@ -925,11 +925,13 @@ const PUSH_SUBSCRIBE=CONTA_URL+"/push/subscribe";
 let swReg=null;
 function b64ToUint8(b64){const pad="=".repeat((4-b64.length%4)%4);const s=(b64+pad).replace(/-/g,"+").replace(/_/g,"/");const raw=atob(s);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
 async function initNotif(){
-  if(!("serviceWorker" in navigator)||!("PushManager" in window))return; // não suportado
-  try{swReg=await navigator.serviceWorker.register("sw.js");}catch(e){return;}
-  const btn=document.getElementById("btnNotif");btn.style.display="";
-  const sub=await swReg.pushManager.getSubscription();
-  setNotifBtn(sub?"on":(Notification.permission==="denied"?"denied":"off"));
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))return; // não suportado
+  document.getElementById("btnNotif").style.display="";   // mostrar o botão em qualquer dispositivo com suporte
+  try{
+    swReg=await navigator.serviceWorker.register("sw.js");
+    const sub=await swReg.pushManager.getSubscription();
+    setNotifBtn(sub?"on":(Notification.permission==="denied"?"denied":"off"));
+  }catch(e){setNotifBtn(Notification.permission==="denied"?"denied":"off");}
 }
 function setNotifBtn(state){
   const b=document.getElementById("btnNotif");if(!b)return;
@@ -938,7 +940,7 @@ function setNotifBtn(state){
   else{b.textContent="🔔 Ativar avisos";b.style.color="";b.style.borderColor="";}
 }
 async function toggleNotif(){
-  if(!swReg)return;
+  if(!swReg){try{swReg=await navigator.serviceWorker.register("sw.js");}catch(e){alert("Não consegui preparar as notificações neste dispositivo.");return;}}
   const existing=await swReg.pushManager.getSubscription();
   if(existing){alert("Já estás a receber avisos neste dispositivo. ✓");return;}
   const perm=await Notification.requestPermission();
