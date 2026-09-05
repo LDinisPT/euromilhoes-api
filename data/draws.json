@@ -13,8 +13,61 @@
       12
     ],
     "has_winner": false,
-    "jackpot": null,
-    "prizes": {}
+    "jackpot": 89319119.5,
+    "prizes": {
+      "5-2": {
+        "prize": 89319119.5,
+        "winners": 0
+      },
+      "5-1": {
+        "prize": 694559.23,
+        "winners": 0
+      },
+      "5-0": {
+        "prize": 18036.65,
+        "winners": 1
+      },
+      "4-2": {
+        "prize": 1487.11,
+        "winners": 4
+      },
+      "4-1": {
+        "prize": 110.61,
+        "winners": 63
+      },
+      "3-2": {
+        "prize": 65.77,
+        "winners": 76
+      },
+      "4-0": {
+        "prize": 31.62,
+        "winners": 159
+      },
+      "2-2": {
+        "prize": 16.3,
+        "winners": 1498
+      },
+      "3-1": {
+        "prize": 10.46,
+        "winners": 2699
+      },
+      "3-0": {
+        "prize": 7.51,
+        "winners": 7765
+      },
+      "1-2": {
+        "prize": 8.15,
+        "winners": 7370
+      },
+      "2-1": {
+        "prize": 5.51,
+        "winners": 36796
+      },
+      "2-0": {
+        "prize": 3.45,
+        "winners": 109085
+      }
+    }
   },
   {
     "date": "2026-09-01",
