@@ -305,6 +305,11 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 .cp-wins{margin-top:10px;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px;}
 .cp-win{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-wrap:wrap;}
 .cp-win.won{color:var(--text);}
+.cp-mes{display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:10px 0 4px;padding-top:7px;border-top:1px dashed var(--border);}
+.cp-wins .cp-mes:first-child{border-top:none;padding-top:0;margin-top:0;}
+.cp-mes-tot{color:var(--gold);font-weight:500;}
+.cp-edit{border-color:rgba(245,200,66,0.35)!important;color:var(--gold)!important;}
+.cp-edit:hover{background:rgba(245,200,66,0.1)!important;}
 .btn-pessoal{padding:6px 12px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.35);color:var(--gold);border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .btn-pessoal:hover{background:rgba(245,200,66,0.2);}
 .btn-pessoal.done{background:rgba(34,197,94,0.12);border-color:var(--green);color:var(--green);}
@@ -371,12 +376,16 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 <!-- ═══════════ CHAVES PESSOAIS ═══════════ -->
 <div id="pageChaves" style="display:none;">
   <div class="ta-note" style="margin-bottom:14px;">
-    🔑 As tuas chaves ficam guardadas <strong>só neste telemóvel</strong> (privadas, ninguém mais as vê). Vê se cada uma teria sido premiada nos sorteios de <span id="cpAno">2026</span>.
+    🔑 As tuas chaves ficam guardadas <strong>só neste telemóvel</strong> (privadas). Só conta os prémios <strong>a partir do dia em que a começaste a jogar</strong> — sem histórico falso.
   </div>
 
   <div class="date-search-box">
     <div class="section-label" style="margin:0 0 8px;">Nova chave</div>
-    <input id="cpNome" class="date-input" placeholder="Nome (ex.: João, Chave da sorte)" style="width:100%;margin-bottom:12px;">
+    <input id="cpNome" class="date-input" placeholder="Nome (ex.: João, Chave da sorte)" style="width:100%;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;">A jogar desde:</span>
+      <input type="date" id="cpDesde" class="date-input" style="flex:1;">
+    </div>
     <div class="section-label" style="margin-bottom:6px;">Números <span id="cpNumLbl" style="color:var(--gold);">(0/5)</span> <span style="color:var(--muted);font-size:9px;">— 5, ou mais para múltipla (até 8)</span></div>
     <div class="num-grid-v" id="cpNumGrid"></div>
     <div class="section-label" style="margin:10px 0 6px;">Estrelas <span id="cpStarLbl" style="color:var(--star);">(0/2)</span> <span style="color:var(--muted);font-size:9px;">— 2, ou mais (até 5)</span></div>
@@ -1240,19 +1249,23 @@ function cpUpdate(){
   else info.textContent="";
 }
 function cpSaveList(){localStorage.setItem("eurom_chaves",JSON.stringify(chaves));}
+function cpHoje(){return new Date().toISOString().slice(0,10);}
+function cpFmtData(iso){const p=(iso||"").split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:iso;}
 function cpGuardar(){
   if(cpNums.length<5||cpStars.length<2)return;
   const nome=(document.getElementById("cpNome").value||"").trim()||"Sem nome";
-  chaves.push({id:Date.now()+"-"+Math.floor(Math.random()*1000),nome,nums:[...cpNums].sort((a,b)=>a-b),stars:[...cpStars].sort((a,b)=>a-b)});
+  const desde=document.getElementById("cpDesde").value||cpHoje();
+  chaves.push({id:Date.now()+"-"+Math.floor(Math.random()*1000),nome,desde,nums:[...cpNums].sort((a,b)=>a-b),stars:[...cpStars].sort((a,b)=>a-b)});
   cpSaveList();
-  cpNums=[];cpStars=[];document.getElementById("cpNome").value="";
+  cpNums=[];cpStars=[];document.getElementById("cpNome").value="";document.getElementById("cpDesde").value=cpHoje();
   cpBuildGrids();cpUpdate();cpRenderList();
 }
 function cpRemover(id){if(!confirm("Apagar esta chave?"))return;chaves=chaves.filter(x=>x.id!==id);cpSaveList();cpRenderList();}
+function cpEditNome(id){const k=chaves.find(x=>x.id===id);if(!k)return;const novo=prompt("Novo nome da chave:",k.nome||"");if(novo===null)return;k.nome=novo.trim()||"Sem nome";cpSaveList();cpRenderList();}
 
 // Adicionar uma chave gerada (do Gerador) às pessoais
 function cpAddChave(nums,stars,nome){
-  chaves.push({id:Date.now()+"-"+Math.floor(Math.random()*1000),nome:nome||"Gerada",nums:[...nums].sort((a,b)=>a-b),stars:[...stars].sort((a,b)=>a-b)});
+  chaves.push({id:Date.now()+"-"+Math.floor(Math.random()*1000),nome:nome||"Gerada",desde:cpHoje(),nums:[...nums].sort((a,b)=>a-b),stars:[...stars].sort((a,b)=>a-b)});
   cpSaveList();
 }
 
@@ -1269,37 +1282,43 @@ function cpDrawResult(k,date){
       if(PRIZES[pk]){premiado=true;const pr=prizeFor(date,pk);if(pr&&pr.prize!=null){ganho+=pr.prize;temValor=true;}linhas++;}}}
   return{date,mnTot,msTot,ganho,linhas,premiado,temValor};
 }
-function cpResultadosAno(k,ano){
+function cpResultados(k){
+  const desde=k.desde||new Date(parseInt(k.id)||0).toISOString().slice(0,10);
   const wins=[];let total=0;
-  for(const date of [...dateMap.keys()].filter(d=>d.startsWith(ano))){
+  for(const date of dateMap.keys()){
+    if(date<desde)continue;
     const r=cpDrawResult(k,date);
     if(r&&r.premiado){wins.push(r);total+=r.ganho;}
   }
   wins.sort((a,b)=>b.date.localeCompare(a.date));
-  return{wins,total,premiados:wins.length};
+  return{wins,total,premiados:wins.length,desde};
 }
 function cpRenderList(){
   const el=document.getElementById("cpList");
-  const ano=(new Date().getFullYear()).toString();
-  document.getElementById("cpAno").textContent=ano;
   if(chaves.length===0){el.innerHTML=`<div class="empty"><div class="icon">🔑</div><p>Ainda não tens chaves guardadas.<br>Adiciona a tua acima, ou gera uma no separador Gerador.</p></div>`;return;}
   let html="";
   for(const k of chaves){
     const ap=comb(k.nums.length,5)*comb(k.stars.length,2);
-    const res=cpResultadosAno(k,ano);
+    const res=cpResultados(k);
     const balls=k.nums.map(n=>`<div class="ball">${n}</div>`).join("")+`<span class="sep">★</span>`+k.stars.map(s=>`<div class="ball star-b">${s}</div>`).join("");
     const resumo=res.premiados>0
-      ?`<span style="color:var(--green);font-weight:600;">${res.premiados} premiado${res.premiados===1?"":"s"}</span> · <span style="color:var(--gold);font-weight:600;">${fmtPrize(res.total)}</span> em ${ano}`
-      :`<span style="color:var(--muted);">Sem prémios em ${ano}</span>`;
+      ?`<span style="color:var(--green);font-weight:600;">${res.premiados} premiado${res.premiados===1?"":"s"}</span> · <span style="color:var(--gold);font-weight:600;">${fmtPrize(res.total)}</span> ganho`
+      :`<span style="color:var(--muted);">Ainda sem prémios</span>`;
+    // agrupar por mês (mais recente primeiro), com subtotal
+    const meses={};
+    for(const w of res.wins){const mk=w.date.slice(0,7);(meses[mk]=meses[mk]||[]).push(w);}
     let wins="";
-    for(const w of res.wins.slice(0,10)){
-      const eur=w.ganho>0?`<strong style="color:var(--gold);">${fmtPrize(w.ganho)}</strong>`:`<span style="color:var(--muted);">valor a carregar</span>`;
-      wins+=`<div class="cp-win won"><span class="hist-date">${w.date}</span><span>${w.mnTot} nº e ${w.msTot} ★</span><span style="margin-left:auto;">${eur}</span></div>`;
+    for(const mk of Object.keys(meses).sort().reverse()){
+      const lista=meses[mk],mtot=lista.reduce((a,w)=>a+w.ganho,0),mn=MESES[parseInt(mk.slice(5,7))-1];
+      wins+=`<div class="cp-mes"><span>${mn.charAt(0).toUpperCase()+mn.slice(1)} ${mk.slice(0,4)}</span><span class="cp-mes-tot">${fmtPrize(mtot)}</span></div>`;
+      for(const w of lista){
+        const eur=w.ganho>0?`<strong style="color:var(--gold);">${fmtPrize(w.ganho)}</strong>`:`<span style="color:var(--muted);">a carregar</span>`;
+        wins+=`<div class="cp-win won"><span class="hist-date">${w.date}</span><span>${w.mnTot} nº e ${w.msTot} ★</span><span style="margin-left:auto;">${eur}</span></div>`;
+      }
     }
-    if(res.wins.length>10)wins+=`<div class="hist-more">+ ${res.wins.length-10} outros sorteios premiados</div>`;
     html+=`<div class="key-card cp-card">
-      <div class="cp-head"><div><div class="cp-nome">${(k.nome||"").replace(/[<>]/g,"")}</div><div class="cp-apostas">${ap} aposta${ap===1?"":"s"} · ${fmtPrize(ap*2.5)}/sorteio</div></div>
-        <button class="cp-del" onclick="cpRemover('${k.id}')">✕</button></div>
+      <div class="cp-head"><div><div class="cp-nome">${(k.nome||"").replace(/[<>]/g,"")}</div><div class="cp-apostas">${ap} aposta${ap===1?"":"s"} · ${fmtPrize(ap*2.5)}/sorteio · desde ${cpFmtData(res.desde)}</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0;"><button class="cp-del cp-edit" onclick="cpEditNome('${k.id}')" title="Mudar nome">✎</button><button class="cp-del" onclick="cpRemover('${k.id}')">✕</button></div></div>
       <div class="balls-row" style="margin:8px 0;">${balls}</div>
       <div class="cp-resumo">${resumo}</div>
       ${wins?`<div class="cp-wins">${wins}</div>`:""}
@@ -1307,7 +1326,7 @@ function cpRenderList(){
   }
   el.innerHTML=html;
 }
-function buildChaves(){cpBuildGrids();cpUpdate();cpRenderList();}
+function buildChaves(){const di=document.getElementById("cpDesde");if(di&&!di.value)di.value=cpHoje();cpBuildGrids();cpUpdate();cpRenderList();}
 
 // ── INIT ──
 buildSysPills();updateBtn();updateCounts();
