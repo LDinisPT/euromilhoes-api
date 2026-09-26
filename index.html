@@ -294,6 +294,20 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 .ta-milhao .mloc{color:var(--star);font-weight:500;}
 .ta-tag-quase{display:inline-block;font-family:'DM Mono',monospace;font-size:8px;padding:2px 6px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;background:rgba(56,189,248,0.12);color:var(--blue);border:1px solid rgba(56,189,248,0.25);margin-top:4px;}
 .ta-draw.quase{border-color:rgba(56,189,248,0.3);}
+/* ── CHAVES PESSOAIS ── */
+.cp-card{padding:14px 16px;margin-bottom:10px;}
+.cp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.cp-nome{font-family:'DM Sans',sans-serif;font-weight:600;font-size:15px;color:var(--text);}
+.cp-apostas{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;}
+.cp-del{background:transparent;border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:6px;width:28px;height:28px;cursor:pointer;flex-shrink:0;font-size:12px;}
+.cp-del:hover{background:rgba(239,68,68,0.1);}
+.cp-resumo{font-size:12px;margin-top:4px;}
+.cp-wins{margin-top:10px;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px;}
+.cp-win{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-wrap:wrap;}
+.cp-win.won{color:var(--text);}
+.btn-pessoal{padding:6px 12px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.35);color:var(--gold);border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-pessoal:hover{background:rgba(245,200,66,0.2);}
+.btn-pessoal.done{background:rgba(34,197,94,0.12);border-color:var(--green);color:var(--green);}
 </style>
 </head>
 <body>
@@ -321,6 +335,7 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
 <!-- PAGE TABS -->
 <div class="page-tabs">
   <div class="page-tab active" onclick="setPage('turnoa')"><span class="tab-icon">⭐</span>Turno A</div>
+  <div class="page-tab" onclick="setPage('chaves')"><span class="tab-icon">🔑</span>Chaves</div>
   <div class="page-tab" onclick="setPage('gerador')"><span class="tab-icon">🎲</span>Gerador</div>
   <div class="page-tab" onclick="setPage('verificador')"><span class="tab-icon">🎫</span>Verificador</div>
   <div class="page-tab" onclick="setPage('milhao')"><span class="tab-icon">💰</span>M1lhão</div>
@@ -351,6 +366,27 @@ footer{border-top:1px solid var(--border);padding:18px 0;text-align:center;font-
   </div>
 
   <div id="taDraws"><div class="empty"><div class="icon">⭐</div><p>A carregar sorteios e prémios...</p></div></div>
+</div>
+
+<!-- ═══════════ CHAVES PESSOAIS ═══════════ -->
+<div id="pageChaves" style="display:none;">
+  <div class="ta-note" style="margin-bottom:14px;">
+    🔑 As tuas chaves ficam guardadas <strong>só neste telemóvel</strong> (privadas, ninguém mais as vê). Vê se cada uma teria sido premiada nos sorteios de <span id="cpAno">2026</span>.
+  </div>
+
+  <div class="date-search-box">
+    <div class="section-label" style="margin:0 0 8px;">Nova chave</div>
+    <input id="cpNome" class="date-input" placeholder="Nome (ex.: João, Chave da sorte)" style="width:100%;margin-bottom:12px;">
+    <div class="section-label" style="margin-bottom:6px;">Números <span id="cpNumLbl" style="color:var(--gold);">(0/5)</span> <span style="color:var(--muted);font-size:9px;">— 5, ou mais para múltipla (até 8)</span></div>
+    <div class="num-grid-v" id="cpNumGrid"></div>
+    <div class="section-label" style="margin:10px 0 6px;">Estrelas <span id="cpStarLbl" style="color:var(--star);">(0/2)</span> <span style="color:var(--muted);font-size:9px;">— 2, ou mais (até 5)</span></div>
+    <div class="star-grid-v" id="cpStarGrid"></div>
+    <div id="cpInfo" style="text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:10px;"></div>
+    <button class="btn-verify" id="cpSave" onclick="cpGuardar()" disabled style="margin-top:12px;">➕ GUARDAR CHAVE</button>
+  </div>
+
+  <div class="section-label">As minhas chaves</div>
+  <div id="cpList"></div>
 </div>
 
 <!-- ═══════════ GERADOR ═══════════ -->
@@ -541,13 +577,15 @@ let savedTickets=JSON.parse(localStorage.getItem("eurom_tickets")||"[]");
 
 // ── PAGE ──
 function setPage(p){
-  document.querySelectorAll(".page-tab").forEach((t,i)=>t.classList.toggle("active",["turnoa","gerador","verificador","milhao","conta"][i]===p));
+  document.querySelectorAll(".page-tab").forEach((t,i)=>t.classList.toggle("active",["turnoa","chaves","gerador","verificador","milhao","conta"][i]===p));
   document.getElementById("pageTurnoA").style.display=p==="turnoa"?"block":"none";
+  document.getElementById("pageChaves").style.display=p==="chaves"?"block":"none";
   document.getElementById("pageGerador").style.display=p==="gerador"?"block":"none";
   document.getElementById("pageVerificador").style.display=p==="verificador"?"block":"none";
   document.getElementById("pageMilhao").style.display=p==="milhao"?"block":"none";
   document.getElementById("pageConta").style.display=p==="conta"?"block":"none";
   if(p==="turnoa"){buildTurnoA();}
+  if(p==="chaves"){buildChaves();}
   if(p==="verificador"){buildQuickDates();buildNumGridV();buildStarGridV();renderSaved();}
   if(p==="milhao"){loadMilhao();}
   if(p==="conta"){contaAbrir();}
@@ -580,7 +618,7 @@ function generate(){
     const keys=[],used=new Set();let att=0;
     while(keys.length<nKeys&&att<400){att++;const nums=pickNumsMulti(5);const k=nums.join(",");if(used.has(k))continue;used.add(k);const stars=pickStars();const{score,tags}=scoreNums(nums);keys.push({nums,stars,score,tags});}
     keys.sort((a,b)=>b.score-a.score);
-    keys.forEach((k,i)=>{const sc=k.score>=75?"score-a":k.score>=50?"score-b":"score-c";const card=document.createElement("div");card.className="key-card";card.style.animationDelay=`${i*0.07}s`;card.innerHTML=`<div class="key-top"><div class="key-num">#${i+1}</div><div class="balls-row">${ballsHTML(k.nums,k.stars,i*0.07)}</div><div class="key-meta"><div><div class="score-val ${sc}">${k.score}</div><div class="score-lbl">Score</div></div><div class="tags">${tagHTML(k.tags)}</div></div></div>${histHTML(k.nums,k.stars)}`;section.appendChild(card);});
+    keys.forEach((k,i)=>{const sc=k.score>=75?"score-a":k.score>=50?"score-b":"score-c";const card=document.createElement("div");card.className="key-card";card.style.animationDelay=`${i*0.07}s`;card.innerHTML=`<div class="key-top"><div class="key-num">#${i+1}</div><div class="balls-row">${ballsHTML(k.nums,k.stars,i*0.07)}</div><div class="key-meta"><div><div class="score-val ${sc}">${k.score}</div><div class="score-lbl">Score</div></div><div class="tags">${tagHTML(k.tags)}</div></div></div>${histHTML(k.nums,k.stars)}<div style="text-align:right;margin-top:8px;"><button class="btn-pessoal" onclick='cpAddChave([${k.nums}],[${k.stars}],"Gerada");this.textContent="✓ Nas Pessoais";this.classList.add("done");this.disabled=true;'>➕ Guardar nas Pessoais</button></div>`;section.appendChild(card);});
     renderCost(nKeys,nKeys*2.5);
   }else{
     const baseNums=pickNumsMulti(sysN),baseStars=pickStars();
@@ -588,7 +626,7 @@ function generate(){
     const allKeys=[];for(const n of numCombos)for(const s of starCombos)allKeys.push({nums:n,stars:s});
     const total=allKeys.length,cost=total*2.5;
     const hdr=document.createElement("div");hdr.className="sys-header";
-    hdr.innerHTML=`Sistema <strong>S${sysN}</strong> — Base: <strong>${baseNums.join(", ")}</strong> ★ <strong>${baseStars.join(", ")}</strong> | <strong>${total} chaves</strong> | Custo: <strong>${fmtEur(cost)}</strong>`;
+    hdr.innerHTML=`Sistema <strong>S${sysN}</strong> — Base: <strong>${baseNums.join(", ")}</strong> ★ <strong>${baseStars.join(", ")}</strong> | <strong>${total} chaves</strong> | Custo: <strong>${fmtEur(cost)}</strong><div style="margin-top:8px;"><button class="btn-pessoal" onclick='cpAddChave([${baseNums}],[${baseStars}],"Sistema S${sysN}");this.textContent="✓ Nas Pessoais";this.classList.add("done");this.disabled=true;'>➕ Guardar sistema nas Pessoais</button></div>`;
     section.appendChild(hdr);
     allKeys.slice(0,100).forEach((k,i)=>{const{score,tags}=scoreNums(k.nums);const sc=score>=75?"score-a":score>=50?"score-b":"score-c";const card=document.createElement("div");card.className="key-card";card.style.animationDelay=`${Math.min(i*0.02,0.5)}s`;card.innerHTML=`<div class="key-top"><div class="key-num">#${i+1}</div><div class="balls-row">${ballsHTML(k.nums,k.stars,Math.min(i*0.02,0.3))}</div><div class="key-meta"><div><div class="score-val ${sc}">${score}</div><div class="score-lbl">Score</div></div><div class="tags">${tagHTML(tags,["sis"])}</div></div></div>${histHTML(k.nums,k.stars)}`;section.appendChild(card);});
     if(total>100){const m=document.createElement("div");m.style.cssText="text-align:center;padding:14px;font-family:DM Mono,monospace;font-size:10px;color:var(--muted);";m.textContent=`+ ${total-100} chaves adicionais não mostradas`;section.appendChild(m);}
@@ -1168,6 +1206,108 @@ async function contaGuardar(){
 }
 function contaCancelar(){contaEditMode=false;contaPin=null;conta=null;contaAbrir();}
 function contaAddMembro(){conta.membros.push("");renderConta();}
+
+// ── CHAVES PESSOAIS (privado, neste telemóvel) ──
+let chaves=JSON.parse(localStorage.getItem("eurom_chaves")||"[]");
+let cpNums=[],cpStars=[];
+const CP_MAXNUM=8,CP_MAXSTAR=5;
+
+function cpBuildGrids(){
+  const ng=document.getElementById("cpNumGrid");ng.innerHTML="";
+  for(let i=1;i<=50;i++){
+    const sel=cpNums.includes(i),dis=!sel&&cpNums.length>=CP_MAXNUM;
+    const b=document.createElement("div");
+    b.className="num-btn-v"+(sel?" sel-num":"")+(dis?" disabled":"");b.textContent=i;
+    b.onclick=()=>{if(dis)return;if(sel)cpNums=cpNums.filter(x=>x!==i);else cpNums.push(i);cpBuildGrids();cpUpdate();};
+    ng.appendChild(b);
+  }
+  const sg=document.getElementById("cpStarGrid");sg.innerHTML="";
+  for(let i=1;i<=12;i++){
+    const sel=cpStars.includes(i),dis=!sel&&cpStars.length>=CP_MAXSTAR;
+    const b=document.createElement("div");
+    b.className="num-btn-v"+(sel?" sel-star":"")+(dis?" disabled":"");b.textContent=i;
+    b.onclick=()=>{if(dis)return;if(sel)cpStars=cpStars.filter(x=>x!==i);else cpStars.push(i);cpBuildGrids();cpUpdate();};
+    sg.appendChild(b);
+  }
+  document.getElementById("cpNumLbl").textContent=`(${cpNums.length}/5${cpNums.length>5?"–8":""})`;
+  document.getElementById("cpStarLbl").textContent=`(${cpStars.length}/2${cpStars.length>2?"–5":""})`;
+}
+function cpUpdate(){
+  const n=cpNums.length,s=cpStars.length;
+  document.getElementById("cpSave").disabled=!(n>=5&&n<=CP_MAXNUM&&s>=2&&s<=CP_MAXSTAR);
+  const info=document.getElementById("cpInfo");
+  if(n>=5&&s>=2){const ap=comb(n,5)*comb(s,2);info.textContent=`${ap} aposta${ap===1?"":"s"} · ${fmtPrize(ap*2.5)}/sorteio`;}
+  else info.textContent="";
+}
+function cpSaveList(){localStorage.setItem("eurom_chaves",JSON.stringify(chaves));}
+function cpGuardar(){
+  if(cpNums.length<5||cpStars.length<2)return;
+  const nome=(document.getElementById("cpNome").value||"").trim()||"Sem nome";
+  chaves.push({id:Date.now()+"-"+Math.floor(Math.random()*1000),nome,nums:[...cpNums].sort((a,b)=>a-b),stars:[...cpStars].sort((a,b)=>a-b)});
+  cpSaveList();
+  cpNums=[];cpStars=[];document.getElementById("cpNome").value="";
+  cpBuildGrids();cpUpdate();cpRenderList();
+}
+function cpRemover(id){if(!confirm("Apagar esta chave?"))return;chaves=chaves.filter(x=>x.id!==id);cpSaveList();cpRenderList();}
+
+// Adicionar uma chave gerada (do Gerador) às pessoais
+function cpAddChave(nums,stars,nome){
+  chaves.push({id:Date.now()+"-"+Math.floor(Math.random()*1000),nome:nome||"Gerada",nums:[...nums].sort((a,b)=>a-b),stars:[...stars].sort((a,b)=>a-b)});
+  cpSaveList();
+}
+
+// Resultado de uma chave (mesmo múltipla) num sorteio
+function cpDrawResult(k,date){
+  const row=dateMap.get(date);if(!row)return null;
+  const dn=row.slice(1,6),ds=[row[6],row[7]];
+  const mnTot=k.nums.filter(n=>dn.includes(n)).length;
+  const msTot=k.stars.filter(s=>ds.includes(s)).length;
+  const numCombos=combinations(k.nums,5),starCombos=combinations(k.stars,2);
+  let ganho=0,linhas=0,temValor=false,premiado=false;
+  for(const nc of numCombos){const mn=nc.filter(n=>dn.includes(n)).length;
+    for(const sc of starCombos){const ms=sc.filter(s=>ds.includes(s)).length;const pk=`${mn}-${ms}`;
+      if(PRIZES[pk]){premiado=true;const pr=prizeFor(date,pk);if(pr&&pr.prize!=null){ganho+=pr.prize;temValor=true;}linhas++;}}}
+  return{date,mnTot,msTot,ganho,linhas,premiado,temValor};
+}
+function cpResultadosAno(k,ano){
+  const wins=[];let total=0;
+  for(const date of [...dateMap.keys()].filter(d=>d.startsWith(ano))){
+    const r=cpDrawResult(k,date);
+    if(r&&r.premiado){wins.push(r);total+=r.ganho;}
+  }
+  wins.sort((a,b)=>b.date.localeCompare(a.date));
+  return{wins,total,premiados:wins.length};
+}
+function cpRenderList(){
+  const el=document.getElementById("cpList");
+  const ano=(new Date().getFullYear()).toString();
+  document.getElementById("cpAno").textContent=ano;
+  if(chaves.length===0){el.innerHTML=`<div class="empty"><div class="icon">🔑</div><p>Ainda não tens chaves guardadas.<br>Adiciona a tua acima, ou gera uma no separador Gerador.</p></div>`;return;}
+  let html="";
+  for(const k of chaves){
+    const ap=comb(k.nums.length,5)*comb(k.stars.length,2);
+    const res=cpResultadosAno(k,ano);
+    const balls=k.nums.map(n=>`<div class="ball">${n}</div>`).join("")+`<span class="sep">★</span>`+k.stars.map(s=>`<div class="ball star-b">${s}</div>`).join("");
+    const resumo=res.premiados>0
+      ?`<span style="color:var(--green);font-weight:600;">${res.premiados} premiado${res.premiados===1?"":"s"}</span> · <span style="color:var(--gold);font-weight:600;">${fmtPrize(res.total)}</span> em ${ano}`
+      :`<span style="color:var(--muted);">Sem prémios em ${ano}</span>`;
+    let wins="";
+    for(const w of res.wins.slice(0,10)){
+      const eur=w.ganho>0?`<strong style="color:var(--gold);">${fmtPrize(w.ganho)}</strong>`:`<span style="color:var(--muted);">valor a carregar</span>`;
+      wins+=`<div class="cp-win won"><span class="hist-date">${w.date}</span><span>${w.mnTot} nº e ${w.msTot} ★</span><span style="margin-left:auto;">${eur}</span></div>`;
+    }
+    if(res.wins.length>10)wins+=`<div class="hist-more">+ ${res.wins.length-10} outros sorteios premiados</div>`;
+    html+=`<div class="key-card cp-card">
+      <div class="cp-head"><div><div class="cp-nome">${(k.nome||"").replace(/[<>]/g,"")}</div><div class="cp-apostas">${ap} aposta${ap===1?"":"s"} · ${fmtPrize(ap*2.5)}/sorteio</div></div>
+        <button class="cp-del" onclick="cpRemover('${k.id}')">✕</button></div>
+      <div class="balls-row" style="margin:8px 0;">${balls}</div>
+      <div class="cp-resumo">${resumo}</div>
+      ${wins?`<div class="cp-wins">${wins}</div>`:""}
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+function buildChaves(){cpBuildGrids();cpUpdate();cpRenderList();}
 
 // ── INIT ──
 buildSysPills();updateBtn();updateCounts();
