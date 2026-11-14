@@ -1,5 +1,22 @@
 [
   {
+    "date": "2026-11-13",
+    "nums": [
+      16,
+      27,
+      32,
+      41,
+      45
+    ],
+    "stars": [
+      2,
+      12
+    ],
+    "has_winner": false,
+    "jackpot": null,
+    "prizes": {}
+  },
+  {
     "date": "2026-11-10",
     "nums": [
       15,
