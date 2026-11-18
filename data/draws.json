@@ -13,8 +13,61 @@
       2
     ],
     "has_winner": false,
-    "jackpot": null,
-    "prizes": {}
+    "jackpot": 25861078.6,
+    "prizes": {
+      "5-2": {
+        "prize": 25861078.6,
+        "winners": 0
+      },
+      "5-1": {
+        "prize": 154182.76,
+        "winners": 0
+      },
+      "5-0": {
+        "prize": 21621.03,
+        "winners": 0
+      },
+      "4-2": {
+        "prize": 1772.21,
+        "winners": 0
+      },
+      "4-1": {
+        "prize": 190.26,
+        "winners": 27
+      },
+      "3-2": {
+        "prize": 80.25,
+        "winners": 72
+      },
+      "4-0": {
+        "prize": 52.9,
+        "winners": 57
+      },
+      "2-2": {
+        "prize": 20.11,
+        "winners": 944
+      },
+      "3-1": {
+        "prize": 16.15,
+        "winners": 1283
+      },
+      "3-0": {
+        "prize": 12.75,
+        "winners": 2922
+      },
+      "1-2": {
+        "prize": 9.38,
+        "winners": 4968
+      },
+      "2-1": {
+        "prize": 7.27,
+        "winners": 19957
+      },
+      "2-0": {
+        "prize": 4.94,
+        "winners": 49112
+      }
+    }
   },
   {
     "date": "2026-11-13",
@@ -30,8 +83,61 @@
       12
     ],
     "has_winner": false,
-    "jackpot": null,
-    "prizes": {}
+    "jackpot": 17000000.0,
+    "prizes": {
+      "5-2": {
+        "prize": 17000000.0,
+        "winners": 0
+      },
+      "5-1": {
+        "prize": 175411.76,
+        "winners": 1
+      },
+      "5-0": {
+        "prize": 20498.3,
+        "winners": 3
+      },
+      "4-2": {
+        "prize": 1702.59,
+        "winners": 1
+      },
+      "4-1": {
+        "prize": 131.59,
+        "winners": 73
+      },
+      "3-2": {
+        "prize": 78.75,
+        "winners": 96
+      },
+      "4-0": {
+        "prize": 41.35,
+        "winners": 216
+      },
+      "2-2": {
+        "prize": 18.44,
+        "winners": 1324
+      },
+      "3-1": {
+        "prize": 13.64,
+        "winners": 2781
+      },
+      "3-0": {
+        "prize": 10.12,
+        "winners": 7725
+      },
+      "1-2": {
+        "prize": 8.59,
+        "winners": 7206
+      },
+      "2-1": {
+        "prize": 6.55,
+        "winners": 38305
+      },
+      "2-0": {
+        "prize": 4.3,
+        "winners": 98704
+      }
+    }
   },
   {
     "date": "2026-11-10",
